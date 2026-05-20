@@ -70,9 +70,12 @@
       overflow: hidden;
       min-height: 100vh;
       padding: clamp(20px, 4vw, 54px);
+      display: grid;
+      align-content: start;
       background:
         linear-gradient(90deg, rgba(37, 232, 117, 0.1) 1px, transparent 1px),
         linear-gradient(180deg, rgba(37, 232, 117, 0.08) 1px, transparent 1px),
+        radial-gradient(ellipse at 50% 0%, rgba(248, 255, 217, 0.12), transparent 42%),
         radial-gradient(circle at 86% 12%, rgba(37, 232, 117, 0.24) 0 120px, transparent 220px),
         radial-gradient(circle at 14% 26%, rgba(21, 175, 72, 0.2) 0 150px, transparent 270px),
         linear-gradient(135deg, rgba(37, 232, 117, 0.12) 0 24%, transparent 24.2% 74%, rgba(37, 232, 117, 0.08) 74.2%),
@@ -80,6 +83,7 @@
       background-size:
         42px 42px,
         42px 42px,
+        auto,
         auto,
         auto,
         auto,
@@ -128,17 +132,44 @@
     .menu-header {
       display: grid;
       justify-items: center;
-      gap: 8px;
+      gap: 10px;
       width: min(100%, 1480px);
-      margin: 10px auto clamp(24px, 5vw, 46px);
+      margin: 10px auto clamp(20px, 4vw, 34px);
       padding: clamp(16px, 3vw, 28px);
       border: 3px solid rgba(37, 232, 117, 0.62);
       border-radius: 16px;
-      background: linear-gradient(180deg, rgba(3, 16, 8, 0.82), rgba(9, 34, 17, 0.72));
-      box-shadow: 0 10px 0 #061f0e, 0 24px 50px rgba(0, 0, 0, 0.34), inset 0 0 0 1px rgba(248, 255, 217, 0.08);
+      background:
+        linear-gradient(90deg, rgba(248, 255, 217, 0.08), transparent 26% 74%, rgba(248, 255, 217, 0.08)),
+        linear-gradient(180deg, rgba(3, 16, 8, 0.88), rgba(9, 34, 17, 0.76));
+      box-shadow: 0 10px 0 #061f0e, 0 24px 50px rgba(0, 0, 0, 0.34), inset 0 0 0 1px rgba(248, 255, 217, 0.08), inset 0 0 46px rgba(37, 232, 117, 0.08);
       text-align: center;
       position: relative;
       z-index: 1;
+    }
+
+    .menu-header::before,
+    .menu-header::after {
+      content: "";
+      position: absolute;
+      width: clamp(34px, 5vw, 58px);
+      height: clamp(34px, 5vw, 58px);
+      border-color: #25e875;
+      opacity: 0.82;
+      pointer-events: none;
+    }
+
+    .menu-header::before {
+      left: 14px;
+      top: 14px;
+      border-left: 4px solid;
+      border-top: 4px solid;
+    }
+
+    .menu-header::after {
+      right: 14px;
+      bottom: 14px;
+      border-right: 4px solid;
+      border-bottom: 4px solid;
     }
 
     .menu-title {
@@ -172,6 +203,41 @@
       text-shadow: 0 0 18px rgba(37, 232, 117, 0.24);
     }
 
+    .menu-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .menu-actions button {
+      min-height: 44px;
+      padding: 10px 16px;
+      border: 2px solid rgba(37, 232, 117, 0.72);
+      border-radius: 999px;
+      background: #f8ffd9;
+      color: #050505;
+      font-size: 0.9rem;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      box-shadow: 0 5px 0 #0b5f2b, 0 12px 24px rgba(0, 0, 0, 0.24);
+    }
+
+    .menu-actions button.secondary {
+      background: rgba(3, 16, 8, 0.86);
+      color: #dfffe7;
+      border-color: rgba(248, 255, 217, 0.42);
+      box-shadow: 0 5px 0 #061f0e, 0 12px 24px rgba(0, 0, 0, 0.2);
+    }
+
+    .menu-actions button:hover,
+    .menu-actions button:focus-visible {
+      transform: translateY(-3px);
+      border-color: #25e875;
+    }
+
     .game-grid {
       width: min(100%, 1480px);
       margin: 0 auto;
@@ -180,14 +246,14 @@
       max-width: 760px;
       gap: clamp(18px, 2.6vw, 30px);
       padding: clamp(14px, 2vw, 24px);
-      border: 3px solid rgba(37, 232, 117, 0.42);
+      border: 3px solid rgba(37, 232, 117, 0.5);
       border-radius: 18px;
       background:
         linear-gradient(90deg, rgba(248, 255, 217, 0.05) 1px, transparent 1px),
         linear-gradient(180deg, rgba(248, 255, 217, 0.05) 1px, transparent 1px),
         rgba(3, 13, 7, 0.72);
       background-size: 28px 28px;
-      box-shadow: inset 0 0 34px rgba(37, 232, 117, 0.08), 0 18px 42px rgba(0, 0, 0, 0.28);
+      box-shadow: inset 0 0 34px rgba(37, 232, 117, 0.12), 0 18px 42px rgba(0, 0, 0, 0.32), 0 0 0 1px rgba(248, 255, 217, 0.05);
       position: relative;
       z-index: 1;
     }
@@ -204,6 +270,7 @@
       box-shadow: 0 7px 0 #073716, 0 14px 34px rgba(0, 0, 0, 0.42), 0 0 28px rgba(30, 201, 102, 0.22);
       cursor: pointer;
       transform: rotate(-0.6deg);
+      isolation: isolate;
     }
 
     .game-card:hover,
@@ -227,7 +294,21 @@
       content: "";
       position: absolute;
       inset: 0;
-      background: linear-gradient(90deg, rgba(2, 12, 6, 0.76), rgba(2, 12, 6, 0.15) 58%, rgba(2, 12, 6, 0.38));
+      z-index: 0;
+      background:
+        linear-gradient(90deg, rgba(2, 12, 6, 0.72), rgba(2, 12, 6, 0.1) 58%, rgba(2, 12, 6, 0.34)),
+        radial-gradient(circle at 20% 78%, rgba(248, 255, 217, 0.22), transparent 32%);
+    }
+
+    .game-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      border: 2px solid rgba(248, 255, 217, 0.22);
+      border-radius: 12px;
+      pointer-events: none;
+      transform: translate(8px, 8px);
     }
 
     .game-card-title {
@@ -235,7 +316,7 @@
       left: clamp(18px, 3vw, 34px);
       right: clamp(18px, 3vw, 34px);
       bottom: clamp(16px, 2.4vw, 30px);
-      z-index: 1;
+      z-index: 2;
       display: grid;
       gap: 6px;
       text-align: left;
@@ -266,7 +347,7 @@
       position: absolute;
       top: clamp(14px, 2vw, 22px);
       right: clamp(14px, 2vw, 24px);
-      z-index: 1;
+      z-index: 2;
       padding: 8px 13px;
       border: 2px solid #050505;
       border-radius: 999px;
@@ -1098,6 +1179,10 @@
       <h1 class="menu-title">Lngames</h1>
       <p class="menu-subtitle">Random stuff i made or find cool.</p>
       <p class="menu-hook">Snake turned into a roguelike dungeon crawler.</p>
+      <div class="menu-actions" aria-label="Main actions">
+        <button id="menuPlayBtn" type="button">Play Snake&sup2;</button>
+        <button class="secondary" id="menuCopyBtn" type="button">Copy Link</button>
+      </div>
     </header>
 
     <section class="game-grid" aria-label="Games">
@@ -8175,11 +8260,17 @@
     ui.copyLink.addEventListener("click", () => copyText(publicGameUrl(), "Link copied"));
     ui.copyScore.addEventListener("click", () => copyText(shareRunText(), "Score copied"));
     document.getElementById("mutationRerollBtn").addEventListener("click", rerollMutations);
-    document.getElementById("playSnakeBtn").addEventListener("click", () => {
+    function enterGameFromMenu() {
       document.body.classList.remove("menu-active");
       ui.state.textContent = "Ready";
       draw();
-    });
+    }
+
+    document.getElementById("playSnakeBtn").addEventListener("click", enterGameFromMenu);
+    const menuPlayBtn = document.getElementById("menuPlayBtn");
+    const menuCopyBtn = document.getElementById("menuCopyBtn");
+    if (menuPlayBtn) menuPlayBtn.addEventListener("click", enterGameFromMenu);
+    if (menuCopyBtn) menuCopyBtn.addEventListener("click", () => copyText(publicGameUrl(), "Link copied"));
 
     document.getElementById("victoryClaimBtn").addEventListener("click", () => {
       document.getElementById("victoryPanel").style.display = "none";
