@@ -6633,11 +6633,31 @@ text-align: center;
           const reason = wallHit ? "Stone wall" : debrisHit ? "Iron scale debris obstacle" : "Coiled into yourself";
           const wallTarget = key(next.x, next.y);
           if (wallHit && game.wallPauseTicks <= 0 && game.wallPauseTarget !== wallTarget) {
+            if (hasShield()) {
+              const expired = consumeShield();
+              showMessage(expired ? "Shield absorbed wall bump!" : "Shield weakened by wall bump!", 1200);
+              audio.play("shield");
+              game.wallPauseTicks = 3;
+              game.wallPauseTarget = wallTarget;
+              game.prevSnake = cloneSnake();
+              game.acc = 0;
+              triggerShake(6, 250);
+              return;
+            }
+            if (game.lives <= 1) {
+              game.lives = 0;
+              endRun(reason);
+              return;
+            }
+            game.lives--;
+            updateHud();
             game.wallPauseTicks = 3;
             game.wallPauseTarget = wallTarget;
             game.prevSnake = cloneSnake();
             game.acc = 0;
-            showMessage("Wall bump!", 350);
+            triggerShake(8, 350);
+            audio.play("hit");
+            showMessage("Wall bump! -1 Heart", 1000);
             return;
           }
           game.wallPauseTarget = "";
