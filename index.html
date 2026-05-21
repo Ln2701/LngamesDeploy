@@ -895,6 +895,201 @@
     button:active {
       transform: translateY(1px);
     }
+text-align: center;
+      font-size: 0.88rem;
+    }
+
+    .upgrade-options {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 10px;
+    }
+
+    .shop-row {
+      display: grid;
+      gap: 8px;
+    }
+
+    .shop-row h3 {
+      margin: 2px 0 0;
+      color: #eef2e8;
+      font-size: 0.95rem;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .upgrade-card {
+      min-height: 112px;
+      padding: 12px;
+      display: grid;
+      align-content: start;
+      gap: 7px;
+      text-align: left;
+      background: rgba(32, 38, 47, 0.6);
+      border: 1.5px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+    }
+
+    .upgrade-card:hover:not(.disabled) {
+      transform: translateY(-2px) scale(1.02);
+      border-color: var(--accent);
+      background: rgba(44, 53, 66, 0.85);
+      box-shadow: 0 8px 24px var(--accent);
+    }
+
+    .upgrade-card strong {
+      color: var(--accent);
+      font-size: 1rem;
+      font-weight: 800;
+    }
+
+    .upgrade-card span {
+      color: var(--muted);
+      font-size: 0.8rem;
+      line-height: 1.3;
+    }
+
+    .upgrade-card em {
+      color: var(--accent);
+      font-style: normal;
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .upgrade-card.disabled {
+      opacity: 0.48;
+      cursor: not-allowed;
+    }
+
+    aside, .buffs {
+      padding: 16px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .buffs {
+      align-content: start;
+    }
+
+    .buffs h2 {
+      margin: 0;
+      color: var(--accent);
+      font-size: 1.1rem;
+      font-weight: 800;
+    }
+
+    .buff-list {
+      display: grid;
+      gap: 7px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      color: var(--muted);
+      font-size: 0.85rem;
+      line-height: 1.3;
+    }
+
+    .buff-list li {
+      padding: 10px;
+      border: 1.5px solid rgba(255, 255, 255, 0.05);
+      background: var(--panel-2);
+      border-radius: 10px;
+    }
+
+    .hud {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+      gap: 8px;
+    }
+
+    .stat {
+      min-height: 62px;
+      padding: 10px;
+      background: var(--panel-2);
+      border: 1.5px solid rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      transition: all 0.2s ease;
+    }
+
+    .stat span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .stat strong {
+      display: block;
+      margin-top: 5px;
+      color: var(--text);
+      font-size: 1.15rem;
+      font-weight: 800;
+      line-height: 1;
+      word-break: break-word;
+    }
+
+    .progress {
+      display: grid;
+      gap: 7px;
+      padding: 12px;
+      background: rgba(17, 22, 28, 0.5);
+      border: 1.5px solid rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+    }
+
+    .progress strong {
+      font-weight: 800;
+      font-size: 0.95rem;
+    }
+
+    .bar {
+      height: 12px;
+      background: #07090d;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .fill {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, var(--good), var(--accent));
+      transition: width 120ms ease;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(78px, 1fr));
+      gap: 8px;
+    }
+
+    button {
+      min-height: 42px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(34, 42, 52, 0.7);
+      color: var(--text);
+      font: inherit;
+      font-weight: 800;
+      border-radius: 12px;
+      cursor: pointer;
+      touch-action: manipulation;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    button:hover, button:focus-visible {
+      outline: none;
+      border-color: var(--accent);
+      background: rgba(44, 53, 66, 0.9);
+      transform: translateY(-1px);
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
 
     button.primary {
       background: rgba(82, 64, 38, 0.8);
@@ -911,6 +1106,142 @@
     button.warning:hover, button.warning:focus-visible {
       background: #61272a;
       border-color: #ba4f52;
+    }
+
+    .name-input-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+
+    .name-input-row label {
+      font-size: 0.82rem;
+      color: var(--muted);
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .name-input-row input {
+      flex: 1;
+      min-width: 0;
+      padding: 7px 10px;
+      background: #151b22;
+      border: 1px solid #3a4550;
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 0.9rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .name-input-row input:focus {
+      border-color: var(--accent);
+    }
+
+    .leaderboard-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(6px);
+    }
+
+    .leaderboard-overlay.show {
+      display: flex;
+    }
+
+    .leaderboard-panel {
+      width: min(460px, 92vw);
+      max-height: 80vh;
+      overflow-y: auto;
+      padding: 24px;
+      background: linear-gradient(135deg, var(--panel) 0%, var(--panel-2) 100%);
+      border: 1.5px solid var(--accent);
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+    }
+
+    .leaderboard-panel h2 {
+      margin: 0 0 16px;
+      color: var(--accent);
+      font-size: 1.4rem;
+      font-weight: 800;
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .leaderboard-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .leaderboard-table th {
+      padding: 8px 6px;
+      font-size: 0.72rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      text-align: left;
+    }
+
+    .leaderboard-table td {
+      padding: 8px 6px;
+      font-size: 0.88rem;
+      color: var(--text);
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .leaderboard-table tr:first-child td {
+      color: #ffd700;
+      font-weight: 700;
+    }
+
+    .leaderboard-table tr:nth-child(2) td {
+      color: #c0c0c0;
+      font-weight: 600;
+    }
+
+    .leaderboard-table tr:nth-child(3) td {
+      color: #cd7f32;
+      font-weight: 600;
+    }
+
+    .lb-rank {
+      width: 32px;
+      text-align: center;
+      font-weight: 800;
+    }
+
+    .lb-close {
+      display: block;
+      margin: 16px auto 0;
+      padding: 10px 28px;
+      background: var(--panel);
+      border: 1px solid var(--accent);
+      border-radius: 8px;
+      color: var(--accent);
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .lb-close:hover {
+      background: var(--panel-2);
+    }
+
+    .lb-empty {
+      text-align: center;
+      color: var(--muted);
+      padding: 24px;
+      font-size: 0.9rem;
     }
 
     .dpad {
@@ -1310,6 +1641,11 @@
           </div>
         </div>
 
+        <div class="name-input-row">
+          <label for="playerNameInput">Name:</label>
+          <input type="text" id="playerNameInput" maxlength="16" placeholder="Anonymous" autocomplete="off" spellcheck="false">
+        </div>
+
         <div class="controls">
           <button class="primary" id="startBtn" type="button">Start</button>
           <button id="pauseBtn" type="button">Pause</button>
@@ -1317,6 +1653,15 @@
           <button id="muteBtn" type="button">Mute</button>
           <button id="abilityBtn" type="button">Ability</button>
           <button class="warning" id="unstuckBtn" type="button">Unstuck</button>
+          <button id="leaderboardBtn" type="button">Leaderboard</button>
+        </div>
+
+        <div class="leaderboard-overlay" id="leaderboardOverlay">
+          <div class="leaderboard-panel">
+            <h2>🏆 Leaderboard</h2>
+            <div id="leaderboardBody"></div>
+            <button class="lb-close" id="leaderboardCloseBtn" type="button">Close</button>
+          </div>
         </div>
 
         <div class="volume-control-panel" style="margin-top: 12px; padding: 10px; background: #1a222a; border: 1px solid #2e3842; display: flex; align-items: center; justify-content: space-between; gap: 10px; border-radius: 4px;">
@@ -1399,7 +1744,12 @@
       restart: document.getElementById("restartBtn"),
       mute: document.getElementById("muteBtn"),
       abilityBtn: document.getElementById("abilityBtn"),
-      unstuck: document.getElementById("unstuckBtn")
+      unstuck: document.getElementById("unstuckBtn"),
+      playerNameInput: document.getElementById("playerNameInput"),
+      leaderboardBtn: document.getElementById("leaderboardBtn"),
+      leaderboardOverlay: document.getElementById("leaderboardOverlay"),
+      leaderboardCloseBtn: document.getElementById("leaderboardCloseBtn"),
+      leaderboardBody: document.getElementById("leaderboardBody")
     };
 
     const TILE = 40;
@@ -1437,6 +1787,130 @@
         accent: "#ff4e7c", good: "#d589b2", pageBg: "#100816", panel: "#20152b", panel2: "#2f203f"
       }
     ];
+
+    /* ====================================================
+       GLOBAL LEADERBOARD — Supabase backend
+       Fill in SUPABASE_URL and SUPABASE_ANON_KEY below
+       after creating your free project at supabase.com
+       ==================================================== */
+    const SUPABASE_URL = "https://dqmcuulbbsnxkyyjpxgd.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_w3KeRaC2vplW2oDvd-DaZg_EjNxpWjX";
+    const LB_TABLE    = "leaderboard";
+
+    function supabaseConfigured() {
+      return SUPABASE_URL !== "PASTE_YOUR_PROJECT_URL_HERE" &&
+             SUPABASE_KEY !== "PASTE_YOUR_ANON_PUBLIC_KEY_HERE";
+    }
+
+    async function postScore(name, score, floor, reason) {
+      if (!supabaseConfigured()) return;
+      try {
+        await fetch(`${SUPABASE_URL}/rest/v1/${LB_TABLE}`, {
+          method: "POST",
+          headers: {
+            "apikey": SUPABASE_KEY,
+            "Content-Type": "application/json",
+            "Prefer": "return=minimal"
+          },
+          body: JSON.stringify({ name, score, floor, reason })
+        });
+      } catch (e) {
+        console.warn("Leaderboard post failed:", e);
+      }
+    }
+
+    async function fetchGlobalLeaderboard() {
+      if (!supabaseConfigured()) return null;
+      try {
+        const res = await fetch(
+          `${SUPABASE_URL}/rest/v1/${LB_TABLE}?select=name,score,floor&order=score.desc&limit=15`,
+          {
+            headers: {
+              "apikey": SUPABASE_KEY
+            }
+          }
+        );
+        if (!res.ok) return null;
+        return await res.json();
+      } catch (e) {
+        console.warn("Leaderboard fetch failed:", e);
+        return null;
+      }
+    }
+
+    /* Local cache as fallback */
+    function getLocalLeaderboard() {
+      const data = localStorage.getItem("snakeSquaredLeaderboard");
+      return data ? JSON.parse(data) : [];
+    }
+
+    function saveLocalEntry(name, score, floor) {
+      const lb = getLocalLeaderboard();
+      lb.push({ name, score, floor });
+      lb.sort((a, b) => b.score - a.score);
+      localStorage.setItem("snakeSquaredLeaderboard", JSON.stringify(lb.slice(0, 15)));
+    }
+
+    function addLeaderboardEntry(score, floor, reason) {
+      const name = (ui.playerNameInput.value.trim() || "Anonymous")
+        .replace(/[<>&"]/g, ""); // basic sanitise
+      saveLocalEntry(name, score, floor);
+      postScore(name, score, floor, reason);
+    }
+
+    async function renderLeaderboard() {
+      ui.leaderboardBody.innerHTML = '<div class="lb-empty">Loading...</div>';
+      let entries = await fetchGlobalLeaderboard();
+      if (!entries) {
+        // Fallback to local
+        entries = getLocalLeaderboard();
+        if (entries.length === 0) {
+          ui.leaderboardBody.innerHTML =
+            '<div class="lb-empty">No scores yet! Play and set a record.</div>';
+          return;
+        }
+        // Show a note that it's local only
+        ui.leaderboardBody.innerHTML =
+          '<div class="lb-empty" style="margin-bottom:8px; font-size:0.78rem; color:#ff9966;">⚠ Showing local scores — global board not configured yet.</div>';
+      }
+      if (entries.length === 0) {
+        ui.leaderboardBody.innerHTML = '<div class="lb-empty">No scores yet! Be the first.</div>';
+        return;
+      }
+      const medals = ["🥇", "🥈", "🥉"];
+      let html = '<table class="leaderboard-table"><thead><tr><th>#</th><th>Name</th><th>Score</th><th>Floor</th></tr></thead><tbody>';
+      entries.forEach((e, i) => {
+        const rank = medals[i] || `${i + 1}`;
+        html += `<tr><td class="lb-rank">${rank}</td><td>${escapeHtml(e.name)}</td><td>${e.score.toLocaleString()}</td><td>${e.floor}</td></tr>`;
+      });
+      html += '</tbody></table>';
+      ui.leaderboardBody.innerHTML = html;
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, c =>
+        ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    }
+
+    ui.leaderboardBtn.addEventListener("click", () => {
+      renderLeaderboard();
+      ui.leaderboardOverlay.classList.add("show");
+    });
+    ui.leaderboardCloseBtn.addEventListener("click", () => ui.leaderboardOverlay.classList.remove("show"));
+    ui.leaderboardOverlay.addEventListener("click", (e) => {
+      if (e.target === ui.leaderboardOverlay) ui.leaderboardOverlay.classList.remove("show");
+    });
+
+    /* Persist player name */
+    const savedName = localStorage.getItem("snakeSquaredPlayerName");
+    if (savedName) ui.playerNameInput.value = savedName;
+    ui.playerNameInput.addEventListener("input", () => {
+      localStorage.setItem("snakeSquaredPlayerName", ui.playerNameInput.value);
+    });
+    /* Prevent keyboard game controls while typing name */
+    ui.playerNameInput.addEventListener("keydown", (e) => e.stopPropagation());
+
+
     const DIRS = {
       up: { x: 0, y: -1 },
       down: { x: 0, y: 1 },
@@ -2789,8 +3263,8 @@
         game.potion = randomEmptyTile();
         game.potionKind = randomPotionKind();
       }
-      if (game.floor >= 4 && valueInRange(4) && Math.random() < 0.55 + bonus) game.haste = randomEmptyTile();
-      if (game.floor >= 4 && valueInRange(4) && Math.random() < 0.62 + bonus) game.slow = randomEmptyTile();
+      if (game.floor >= 4 && valueInRange(4) && Math.random() < Math.min(0.95, 0.55 + bonus)) game.haste = randomEmptyTile();
+      if (game.floor >= 4 && valueInRange(4) && Math.random() < Math.min(0.95, 0.62 + bonus)) game.slow = randomEmptyTile();
       if (game.floor >= 4 && valueInRange(3) && Math.random() < Math.min(0.48, 0.18 + game.floor * 0.025)) game.poisonFood = randomReachableFoodTile([game.food].filter(Boolean));
       if (game.floor >= 5 && valueInRange(4) && Math.random() < Math.min(0.32, 0.08 + game.upgrades.relicLuck * 0.05 + dungeonChanceBonus)) spawnRelic();
       /* Heart pickup: rare, increases with vitality */
@@ -2864,11 +3338,11 @@
         const tile = randomEmptyTile();
         if (tile) queueSpawn("potion", tile, 2, randomPotionKind());
       }
-      if (game.floor >= 4 && valueInRange(4) && Math.random() < 0.55 + bonus) {
+      if (game.floor >= 4 && valueInRange(4) && Math.random() < Math.min(0.95, 0.55 + bonus)) {
         const tile = randomEmptyTile();
         if (tile) queueSpawn("haste", tile, 2);
       }
-      if (game.floor >= 4 && valueInRange(4) && Math.random() < 0.62 + bonus) {
+      if (game.floor >= 4 && valueInRange(4) && Math.random() < Math.min(0.95, 0.62 + bonus)) {
         const tile = randomEmptyTile();
         if (tile) queueSpawn("slow", tile, 2);
       }
@@ -3808,6 +4282,7 @@
       audio.playGameOver();
       updateHud();
       updateShareLine();
+      addLeaderboardEntry(game.score, game.floor, reason);
     }
 
     function cutSnakeBody(collisionPoint) {
