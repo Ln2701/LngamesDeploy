@@ -2439,6 +2439,18 @@
       return tiles && tiles.some(tile => same(tile, p));
     }
 
+    function onMudTile() {
+      if (!game.snake || game.snake.length === 0) return false;
+      const head = game.snake[0];
+      return terrainAt(head, game.mudTiles) && game.mutations.acidicSlime <= 0 && game.upgrades.kineticImmunity <= 0;
+    }
+
+    function onIceTile() {
+      if (!game.snake || game.snake.length === 0) return false;
+      const head = game.snake[0];
+      return terrainAt(head, game.iceTiles) && game.mutations.acidicSlime <= 0;
+    }
+
     function shuffle(items) {
       for (let i = items.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -3923,6 +3935,7 @@
 
     function setDirection(dir) {
       if (!DIRS[dir]) return;
+      if (onIceTile()) return; // Lock inputs during ice slide!
       if (!game.running) {
         if (!game.gameOver && !game.countdown && !game.awaitingUpgrade) startGame();
         return;
@@ -6666,8 +6679,14 @@
 
       const oldDir = game.dir;
       game.prevDir = game.dir;
-      game.dir = game.inputQueue.shift() || game.nextDir;
-      game.nextDir = game.inputQueue[0] || game.dir;
+      if (onIceTile()) {
+        game.dir = oldDir;
+        game.nextDir = oldDir;
+        game.inputQueue = [];
+      } else {
+        game.dir = game.inputQueue.shift() || game.nextDir;
+        game.nextDir = game.inputQueue[0] || game.dir;
+      }
 
       if (game.spasmTicks > 0) game.spasmTicks--;
       game.hyperReactiveBoostTicks = 0;
@@ -6868,11 +6887,9 @@
       }
 
       if (terrainAt(next, game.mudTiles) && game.mutations.acidicSlime <= 0 && game.upgrades.kineticImmunity <= 0) {
-        addEffect("Slowdown", 14);
         showMessage("Mud drag", 350);
       }
       if (terrainAt(next, game.iceTiles) && game.mutations.acidicSlime <= 0) {
-        addEffect("Slow Time", 12);
         showMessage("Ice slip", 350);
       }
 
@@ -7430,6 +7447,7 @@
         return false;
       }
       if (game.sludgeTiles && game.sludgeTiles.some(s => same(s, enemy)) && Math.random() < 0.65) return false;
+      if (game.mudTiles && game.mudTiles.some(s => same(s, enemy)) && Math.random() < 0.50) return false;
       if (game.upgrades.enemyRepel > 0 && Math.random() < game.upgrades.enemyRepel) return false;
       if (game.upgrades.enemySlow > 0 && Math.random() < game.upgrades.enemySlow) return false;
       if (enemy.type === "guard" && enemy.wait) {
@@ -8858,6 +8876,9 @@
         hasEffect("Haste") ? game.tickMs * 0.50 :
         hasEffect("Poison") ? game.tickMs * 0.82 :
         game.tickMs;
+
+      if (onIceTile()) speed *= 0.80;
+      if (onMudTile()) speed *= 1.65;
 
       if (game.mutations.heavyTail > 0) {
         speed *= 1.10;
