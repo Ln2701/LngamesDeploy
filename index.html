@@ -2255,6 +2255,7 @@ text-align: center;
       transitioning: false,
       countdown: false,
       startToken: 0,
+      ticks: 0,
       lastTime: 0,
       acc: 0,
       tickMs: 150,
@@ -2342,7 +2343,17 @@ text-align: center;
         shieldBurst: 0,
         shieldReflect: 0,
         shieldPulsePower: 0,
-        cooldownUseRefund: 0
+        cooldownUseRefund: 0,
+        heartPulse: 0,
+        reaperHarvest: 0,
+        kineticImmunity: 0,
+        shieldZap: 0,
+        hasteScoreMult: 1.0,
+        wireEaterDrop: 0.0,
+        revealChests: 0,
+        stickyCoinsRange: 0.0,
+        lazyMonsterSleepChance: 0.0,
+        monsterCoinChance: 0.0
       },
       mutations: {
         spasmoticGrowth: 0,
@@ -3728,6 +3739,8 @@ text-align: center;
       game.effect = null;
       game.effectTicks = 0;
       game.effects = {};
+      game.ticks = 0;
+      game.goldenApple = null;
       game.skinShedUsedThisFloor = false;
       game.sludgeTiles = [];
       game.spasmTicks = 0;
@@ -3742,7 +3755,10 @@ text-align: center;
       }
       game.foodEaten = 0;
       game.itemValue = 0;
-      game.foodGoal = Math.max(4, 8 - Math.floor(mapShrinkPressure() * 0.5) - game.upgrades.goalReduction);
+      game.foodGoal = Math.max(5, 8 - Math.floor(mapShrinkPressure() * 0.5) - game.upgrades.goalReduction);
+      if (game.upgrades.goalReduction >= 2) {
+        game.goldenApple = randomEmptyTile();
+      }
       if (game.pendingFoodProgress > 0) {
         const progress = Math.min(game.pendingFoodProgress, game.foodGoal - 1);
         game.foodEaten = progress;
@@ -3821,6 +3837,7 @@ text-align: center;
       game.fissionDecoys = [];
       game.parasites = [];
       game.stuckTicks = 0;
+      game.ticks = 0;
       game.collisionGraceTicks = 0;
       game.weather = null;
       game.bossActive = false;
@@ -3870,7 +3887,10 @@ text-align: center;
         drillCharges: 0, pureSpeed: 0, speedScore: 0, microShrink: 0,
         abilityCooldownReduce: 0, cooldownUseRefund: 0, doubleBite: 0,
         spikedScales: 0, reclamationDrive: 0, razorSegments: 0, elusiveShedding: 0,
-        shieldDurationBonus: 0, shieldBurst: 0, shieldReflect: 0, shieldPulsePower: 0
+        shieldDurationBonus: 0, shieldBurst: 0, shieldReflect: 0, shieldPulsePower: 0,
+        heartPulse: 0, reaperHarvest: 0, kineticImmunity: 0, shieldZap: 0,
+        hasteScoreMult: 1.0, wireEaterDrop: 0.0, revealChests: 0, stickyCoinsRange: 0.0,
+        lazyMonsterSleepChance: 0.0, monsterCoinChance: 0.0
       };
       game.activeAbility = "Swap Direction";
       game.abilityCooldown = 0;
@@ -4039,9 +4059,8 @@ text-align: center;
     }
 
     function triggerAegisSynergyCheck() {
-      const chance = Math.min(0.16, 0.08 + game.upgrades.shieldReflect * 0.04);
-      if (game.upgrades.shieldReflect > 0 && Math.random() < chance) {
-        addEffect("Shield", Math.ceil(EFFECT_DURATIONS.shield * 0.75));
+      if (game.upgrades.shieldReflect > 0 && Math.random() < 0.25 * game.upgrades.shieldReflect) {
+        addEffect("Shield", 20);
         showMessage("Aegis Synergy! Shield charged!", 1500);
       }
     }
@@ -4051,16 +4070,20 @@ text-align: center;
       const head = game.snake[0];
       if (!head) return;
 
-      showMessage("Aegis Blast! Shockwave!", 1500);
+      const radius = 2 + game.upgrades.shieldBurst;
+      showMessage("Aegis Blast! Supernova!", 1500);
       audio.play("beastRoar");
-      triggerShake(8, 300);
+      triggerShake(12, 350);
 
       let defeated = 0;
       game.enemies = game.enemies.filter(enemy => {
-        if (dist(head, enemy) <= 2) {
+        if (dist(head, enemy) <= radius) {
           game.runStats.enemiesDefeated++;
-          score(75);
+          score(150);
           defeated++;
+          if (game.upgrades.monsterCoinChance > 0 && Math.random() < game.upgrades.monsterCoinChance) {
+            game.gold = { x: enemy.x, y: enemy.y };
+          }
           return false;
         }
         return true;
@@ -4071,7 +4094,7 @@ text-align: center;
 
       for (let i = game.traps.length - 1; i >= 0; i--) {
         const trap = game.traps[i];
-        if (dist(head, trap) <= 2) {
+        if (dist(head, trap) <= radius) {
           disarmTrap(i);
         }
       }
@@ -4181,7 +4204,11 @@ text-align: center;
     function score(points) {
       const weakpointMult = weakpointIndexes().length * 0.08;
       const greedMult = 1 + game.attributes.greed * 0.08 + game.upgrades.scoreMult * 0.05 + weakpointMult;
-      const boosted = Math.floor((points + game.upgrades.scoreBonus + (hasEffect("Haste") ? game.upgrades.hasteScore : 0)) * greedMult);
+      const hasteScoreBonus = hasEffect("Haste") ? game.upgrades.hasteScore : 0;
+      let boosted = Math.floor((points + game.upgrades.scoreBonus + hasteScoreBonus) * greedMult);
+      if (hasEffect("Haste") && game.upgrades.hasteScoreMult > 1.0) {
+        boosted *= game.upgrades.hasteScoreMult;
+      }
       const final = hasDouble() ? boosted * 2 : boosted;
       game.score += final;
       game.runStats.scoreCollected += final;
@@ -4191,6 +4218,17 @@ text-align: center;
       }
       if (final > 0 && game.snake[0]) {
         spawnScoreParticle(game.snake[0].x, game.snake[0].y, final);
+        if (hasEffect("Haste") && game.upgrades.hasteScoreMult > 1.0) {
+          spawnParticles(
+            game.snake[0].x * TILE + TILE / 2,
+            game.snake[0].y * TILE + TILE / 2,
+            5,
+            ["#ffd700", "#ffeb3b"],
+            1.0, 2.5,
+            0.8, 2.2,
+            0.02
+          );
+        }
       }
     }
 
@@ -4200,6 +4238,7 @@ text-align: center;
     }
 
     function disarmTrap(trapIndex) {
+      const trapPos = game.traps[trapIndex];
       game.traps.splice(trapIndex, 1);
       game.runStats.trapsCleared++;
       const coinDrop = 1 + game.upgrades.trapSense;
@@ -4210,7 +4249,22 @@ text-align: center;
         rollValuePickups();
       }
       score(35 + game.upgrades.trapSense * 15);
+      if (game.upgrades.wireEaterDrop > 0 && Math.random() < game.upgrades.wireEaterDrop) {
+        score(25);
+        showMessage("Wire Eater salvaged a coin!", 800);
+      }
       triggerAegisSynergyCheck();
+      if (trapPos) {
+        spawnParticles(
+          trapPos.x * TILE + TILE / 2,
+          trapPos.y * TILE + TILE / 2,
+          8,
+          ["#ffd700", "#ffeb3b", "#ffffff"],
+          1.5, 3.5,
+          1.0, 3.0,
+          0.02
+        );
+      }
     }
 
     function releaseStaticSpark() {
@@ -4445,7 +4499,7 @@ text-align: center;
 
     function useUnstuck() {
       game.startToken = Math.max(0, game.startToken - 5);
-      game.tick = Math.max(0, game.tick - 5);
+      game.ticks = Math.max(0, game.ticks - 5);
       
       game.gameOver = false;
       game.paused = false;
@@ -4513,47 +4567,58 @@ text-align: center;
       {
         name: "Greedy Fang",
         archetype: "Supersonic",
-        text: "Every score gain adds +14 points, but your base speed rises slightly.",
+        text: "Every score gain adds +30 points, plus +15% gold/relic spawn chance, but your base speed rises slightly.",
         apply: () => {
-          game.upgrades.scoreBonus += 14;
+          game.upgrades.scoreBonus += 30;
+          game.upgrades.goldChance += 0.15;
           game.upgrades.pureSpeed += 0.25;
         }
       },
       {
         name: "Snack Sense",
         archetype: "Map Keeper",
-        text: "Each floor requires 1 less food, minimum 7. Rare because shorter goals are strong.",
-        apply: () => game.upgrades.goalReduction = Math.min(2, game.upgrades.goalReduction + 1)
+        text: "Each floor requires 2 less food (minimum 5) and automatically spawns a golden apple at the start of the floor.",
+        apply: () => {
+          game.upgrades.goalReduction = (game.upgrades.goalReduction || 0) + 2;
+        }
       },
       {
         name: "Cracked Charm",
         archetype: "Alchemist",
-        text: "Start every floor with a short Shield.",
-        apply: () => game.upgrades.startShield = 1
+        text: "Start every floor with an Aegis Shield and a +20% movement speed boost for the first 35 ticks.",
+        apply: () => {
+          game.upgrades.startShield = 1;
+        }
       },
       {
         name: "Score Smell",
         archetype: "Treasure Hunter",
-        text: "Score pickup spawn chance increases by 22%.",
-        apply: () => game.upgrades.goldChance += 0.22
+        text: "Score pickup spawn chance increases by +40%, and passively pull score items toward you from 1.5 tiles away.",
+        apply: () => {
+          game.upgrades.goldChance += 0.40;
+          game.upgrades.stickyCoinsRange = Math.max(1.5, game.upgrades.stickyCoinsRange || 0);
+        }
       },
       {
         name: "Longer Rush",
         archetype: "Supersonic",
-        text: "Haste pickups last +14 ticks. More speed is powerful, but harder to steer.",
-        apply: () => game.upgrades.hasteDuration += 14
+        text: "Haste pickups last +25 ticks. While in Haste, gain complete trap immunity (trap triggers bypass you).",
+        apply: () => game.upgrades.hasteDuration += 25
       },
       {
         name: "Trap Specialist",
         archetype: "Trap Disarmer",
-        text: "Disarmed traps award +25 bonus score.",
+        text: "Disarmed traps award +100 bonus score, and trigger a golden coin-dust burst (+20 score per particle).",
         apply: () => game.upgrades.trapSense += 1
       },
       {
         name: "Wire Eater",
         archetype: "Trap Disarmer",
-        text: "Each disarmed trap gives +1 food progress.",
-        apply: () => game.upgrades.trapFood = 1
+        text: "Each disarmed trap gives +1 food progress, and has a 15% chance to salvage a minor coin.",
+        apply: () => {
+          game.upgrades.trapFood = 1;
+          game.upgrades.wireEaterDrop = 0.15;
+        }
       },
       {
         name: "Copper Coil",
@@ -4573,24 +4638,26 @@ text-align: center;
       {
         name: "Aegis Buffer",
         archetype: "Aegis Sentinel",
-        text: "Increase duration of all shields by +6 ticks, and gain a 30-tick Shield right now.",
+        text: "Increase duration of all shields by +12 ticks, gain a 40-tick Shield right now, and increase max lives by +1.",
         apply: () => {
-          game.upgrades.shieldDurationBonus = (game.upgrades.shieldDurationBonus || 0) + 6;
-          addEffect("Shield", EFFECT_DURATIONS.shield);
+          game.upgrades.shieldDurationBonus = (game.upgrades.shieldDurationBonus || 0) + 12;
+          addEffect("Shield", 40);
+          game.maxHearts++;
+          game.lives = Math.min(game.maxHearts, game.lives + 1);
         }
       },
       {
         name: "Aegis Blast",
         archetype: "Aegis Sentinel",
-        text: "When your shield breaks, release a shockwave that defeats enemies and disarms traps in a 2-tile radius.",
+        text: "When your shield breaks, release a supernova shockwave with a 4-tile radius, disarming traps and defeating enemies for +150 score.",
         apply: () => {
-          game.upgrades.shieldBurst = (game.upgrades.shieldBurst || 0) + 1;
+          game.upgrades.shieldBurst = (game.upgrades.shieldBurst || 0) + 2;
         }
       },
       {
         name: "Aegis Synergy",
         archetype: "Aegis Sentinel",
-        text: "Defeating an enemy or disarming a trap has a small chance to grant a short Shield.",
+        text: "Defeating an enemy or disarming a trap has a 25% chance to grant a 20-tick Aegis Shield.",
         apply: () => {
           game.upgrades.shieldReflect = (game.upgrades.shieldReflect || 0) + 1;
         }
@@ -4606,14 +4673,19 @@ text-align: center;
       {
         name: "Bottle Luck",
         archetype: "Alchemist",
-        text: "Potion spawn chance increases by 10%. Potions are strong field control.",
-        apply: () => game.upgrades.potionChance += 0.10
+        text: "Increase potion spawn chance by +25% and make potion effects last +40% longer (+12 ticks).",
+        apply: () => {
+          game.upgrades.potionChance += 0.25;
+          game.upgrades.potionPower = (game.upgrades.potionPower || 0) + 12;
+        }
       },
       {
         name: "Rush Tax",
         archetype: "Supersonic",
-        text: "While Haste is active, score gains add +12.",
-        apply: () => game.upgrades.hasteScore += 12
+        text: "While Haste is active, all score gains are MULTIPLIED by 3x and emit gold sparkles.",
+        apply: () => {
+          game.upgrades.hasteScoreMult = 3;
+        }
       },
       {
         name: "Rush Button",
@@ -4626,8 +4698,11 @@ text-align: center;
       {
         name: "Surveyor Stakes",
         archetype: "Map Keeper",
-        text: "Delays dungeon shrinking by one floor.",
-        apply: () => game.upgrades.mapStability += 1
+        text: "Delays dungeon shrinking by 2 floors, and reveals all hidden wall chests.",
+        apply: () => {
+          game.upgrades.mapStability += 2;
+          game.upgrades.revealChests = 1;
+        }
       },
       {
         name: "Stone Blueprint",
@@ -4646,14 +4721,20 @@ text-align: center;
       {
         name: "Sticky Scores",
         archetype: "Treasure Hunter",
-        text: "Every score item collected grants +25 bonus score.",
-        apply: () => game.upgrades.coinBonus += 1
+        text: "Every score item collected grants +60 bonus score, and pulls nearby coins from 2 tiles away.",
+        apply: () => {
+          game.upgrades.coinBonus += 2.4;
+          game.upgrades.stickyCoinsRange = Math.max(2.0, game.upgrades.stickyCoinsRange || 0);
+        }
       },
       {
         name: "Lazy Monsters",
         archetype: "Beast Hunter",
-        text: "Enemies have +8% chance to skip movement.",
-        apply: () => game.upgrades.enemySlow += 0.08
+        text: "Enemies move 25% slower and have a 15% chance to fall asleep for 20 ticks when nearby.",
+        apply: () => {
+          game.upgrades.enemySlow += 0.25;
+          game.upgrades.lazyMonsterSleepChance = 0.15;
+        }
       },
       {
         name: "Flame Tongue",
@@ -4677,8 +4758,11 @@ text-align: center;
       {
         name: "Monster Purse",
         archetype: "Beast Hunter",
-        text: "Destroyed enemies award double bounty score.",
-        apply: () => game.upgrades.enemyBounty += 1
+        text: "Enemies yield +75 bonus bounty score, and have a +20% chance to drop a gold coin upon defeat.",
+        apply: () => {
+          game.upgrades.enemyBounty += 3;
+          game.upgrades.monsterCoinChance = 0.20;
+        }
       },
       {
         name: "Rattle Stance",
@@ -4836,6 +4920,38 @@ text-align: center;
         archetype: "Pyromancer",
         text: "Fireball kills refund 2 active cooldown ticks. Requires Fireball.",
         apply: () => game.upgrades.cooldownRefund += 0.5
+      },
+      {
+        name: "Magneto-Core",
+        archetype: "Treasure Hunter",
+        text: "Head magnetically draws nearby gold, relics, and hearts toward the snake from 1.5+ tiles away.",
+        apply: () => {
+          game.upgrades.magnet = (game.upgrades.magnet || 0) + 1.5;
+        }
+      },
+      {
+        name: "Static Scales",
+        archetype: "Beast Hunter",
+        text: "Collecting a health Heart releases a map-wide electric pulse that stuns all enemies for 30 ticks and disarms traps in a 3-tile radius.",
+        apply: () => {
+          game.upgrades.heartPulse = (game.upgrades.heartPulse || 0) + 1;
+        }
+      },
+      {
+        name: "Reaper's Harvest",
+        archetype: "Toxic Gourmet",
+        text: "Every 3rd food eaten grants a temporary Haste boost (+12 ticks) and a burst of +100 bonus score.",
+        apply: () => {
+          game.upgrades.reaperHarvest = (game.upgrades.reaperHarvest || 0) + 1;
+        }
+      },
+      {
+        name: "Unstoppable Kinetic",
+        archetype: "Supersonic",
+        text: "Base speed is increased by 15% and you are completely immune to mud slow.",
+        apply: () => {
+          game.upgrades.kineticImmunity = (game.upgrades.kineticImmunity || 0) + 1;
+        }
       }
     ];
 
@@ -5051,6 +5167,15 @@ text-align: center;
         rarity: "Rare",
         text: "Tail-severing cuts off only 25% of body (down from 40%) and extends adrenaline invincibility by 7 ticks.",
         apply: () => game.upgrades.elusiveShedding++
+      },
+      {
+        name: "Static Shielding",
+        archetype: "Aegis Sentinel",
+        rarity: "Rare",
+        text: "While you have an active Shield, strike a random nearby enemy or trap with static lightning, disarming or destroying them every 8 ticks.",
+        apply: () => {
+          game.upgrades.shieldZap = (game.upgrades.shieldZap || 0) + 1;
+        }
       }
     ];
 
@@ -6315,6 +6440,9 @@ text-align: center;
         const bounty = game.upgrades.enemyBounty;
         score(45 * destroyed + bounty * 25);
         if (bounty > 0) addCoins(Math.min(destroyed, bounty));
+        if (game.upgrades.monsterCoinChance > 0 && Math.random() < game.upgrades.monsterCoinChance) {
+          game.gold = { x: p.x, y: p.y };
+        }
         if (source === "fireball") audio.play("hit");
         triggerAegisSynergyCheck();
         if (beforeEnemies - game.enemies.length > 0) {
@@ -6369,6 +6497,7 @@ text-align: center;
 
     function tick() {
       if (!game.running || game.paused || game.gameOver || game.awaitingUpgrade) return;
+      game.ticks = (game.ticks || 0) + 1;
 
       if (game.stunTicks > 0) {
         game.stunTicks--;
@@ -6408,7 +6537,7 @@ text-align: center;
 
       // Parasitic Offspring tick and spawn
       if (game.mutations.parasiticOffspring > 0 && canSpawnFloorStuff()) {
-        if (game.startToken % 28 === 0 && game.snake[0]) {
+        if (game.ticks % 28 === 0 && game.snake[0]) {
           const h = game.snake[0];
           game.parasites.push({ x: h.x, y: h.y, dir: game.dir, duration: 25 });
           audio.play("haste");
@@ -6470,7 +6599,7 @@ text-align: center;
 
       // Chaotic Reverse inversion check
       if (game.mutations.chaoticReverse > 0 && game.snake.length > 1) {
-        if (game.startToken % 45 === 0 && Math.random() < 0.15) {
+        if (game.ticks % 45 === 0 && Math.random() < 0.15) {
           game.snake.reverse();
           resetSnakeAnimation();
           const newHead = game.snake[0];
@@ -6487,7 +6616,7 @@ text-align: center;
       // Tail Whip sweeping/wall-striking check
       if (game.mutations.tailWhip > 0 && game.snake.length > 1) {
         const t = game.snake[game.snake.length - 1];
-        if (game.startToken % 12 === 0) {
+        if (game.ticks % 12 === 0) {
           // Disarm adjacent traps
           game.traps = game.traps.filter((trap, index) => {
             if (dist(trap, t) <= 1) {
@@ -6520,8 +6649,46 @@ text-align: center;
           if (game.heartPickup && dist(game.heartPickup, segment) === 1) {
             game.heartPickup = { x: segment.x, y: segment.y };
           }
+          if (game.goldenApple && dist(game.goldenApple, segment) === 1) {
+            game.goldenApple = { x: segment.x, y: segment.y };
+          }
         }
       }
+
+      // Passive Magneto-Core items attraction check
+      if (game.upgrades.magnet > 0 && game.snake[0]) {
+        const head = game.snake[0];
+        const range = game.upgrades.magnet;
+        if (game.gold && dist(game.gold, head) <= range) {
+          game.gold = { x: head.x, y: head.y };
+        }
+        for (let r = 0; r < game.relics.length; r++) {
+          if (dist(game.relics[r], head) <= range) {
+            game.relics[r] = { x: head.x, y: head.y };
+          }
+        }
+        if (game.heartPickup && dist(game.heartPickup, head) <= range) {
+          game.heartPickup = { x: head.x, y: head.y };
+        }
+        if (game.goldenApple && dist(game.goldenApple, head) <= range) {
+          game.goldenApple = { x: head.x, y: head.y };
+        }
+      }
+
+      // Sticky coins attraction check
+      if (game.upgrades.stickyCoinsRange > 0 && game.snake[0]) {
+        const head = game.snake[0];
+        const range = game.upgrades.stickyCoinsRange;
+        if (game.gold && dist(game.gold, head) <= range) {
+          game.gold = { x: head.x, y: head.y };
+        }
+      }
+
+      // Static Shielding periodic zapping check
+      if (game.upgrades.shieldZap > 0 && hasShield() && game.ticks % 8 === 0) {
+        releaseStaticSpark();
+      }
+
       updateProjectiles();
 
       const oldDir = game.dir;
@@ -6534,8 +6701,8 @@ text-align: center;
 
       if (game.mutations.hyperReactive > 0) {
         if (game.dir !== oldDir) {
-          game.turnTicksHistory.push(game.startToken);
-          game.turnTicksHistory = game.turnTicksHistory.filter(t => game.startToken - t <= 3);
+          game.turnTicksHistory.push(game.ticks);
+          game.turnTicksHistory = game.turnTicksHistory.filter(t => game.ticks - t <= 3);
 
           if (game.turnTicksHistory.length >= 2) {
             game.spasmTicks = 2;
@@ -6583,8 +6750,9 @@ text-align: center;
       const next = movement.next;
       const tail = game.snake[game.snake.length - 1];
       const willEatFood = same(next, game.food);
+      const willEatGoldenApple = same(next, game.goldenApple);
       const willEatPoison = same(next, game.poisonFood);
-      const willGrow = willEatFood || willEatPoison;
+      const willGrow = willEatFood || willEatPoison || willEatGoldenApple;
       /* Ghost effect allows phasing through own body */
       const ghostActive = hasEffect("Ghost") || hasEffect("Invulnerability");
       const bodyHit = !ghostActive && game.snake.some((p, i) => i < game.snake.length - 1 || willGrow ? same(p, next) : same(p, next) && !same(p, tail));
@@ -6609,7 +6777,7 @@ text-align: center;
         showMessage("Opened a hidden wall chest!", 1000);
         audio.play("gold");
       }
-      let trapIndex = (game.upgrades.wings > 0 || game.mutations.acidicSlime > 0) ? -1 : game.traps.findIndex(t => same(t, next));
+      let trapIndex = (game.upgrades.wings > 0 || game.mutations.acidicSlime > 0 || hasEffect("Haste")) ? -1 : game.traps.findIndex(t => same(t, next));
       let enemyHit = game.enemies.some(e => same(e, next));
       let projectileHit = game.projectiles.some(p => p.hostile !== false && same(p, next));
 
@@ -6628,7 +6796,7 @@ text-align: center;
           enemyHit ? game.enemies.find(e => same(e, next)) :
           game.projectiles.find(p => p.hostile !== false && same(p, next));
 
-        /* Walls and body are ALWAYS fatal - shields don't help here */
+        /* Handle wall, body, or stone debris collision */
         if (wallHit || bodyHit || debrisHit) {
           const reason = wallHit ? "Stone wall" : debrisHit ? "Iron scale debris obstacle" : "Coiled into yourself";
           const wallTarget = key(next.x, next.y);
@@ -6670,6 +6838,9 @@ text-align: center;
           if (enemyHit) {
             game.enemies = game.enemies.filter(e => !same(e, next));
             game.runStats.enemiesDefeated++;
+            if (game.upgrades.monsterCoinChance > 0 && Math.random() < game.upgrades.monsterCoinChance) {
+              game.gold = { x: next.x, y: next.y };
+            }
             score(50);
             triggerAegisSynergyCheck();
             spawnParticles(
@@ -6754,13 +6925,49 @@ text-align: center;
         score(5);
       }
 
-      if (terrainAt(next, game.mudTiles) && game.mutations.acidicSlime <= 0) {
+      if (terrainAt(next, game.mudTiles) && game.mutations.acidicSlime <= 0 && game.upgrades.kineticImmunity <= 0) {
         addEffect("Slowdown", 14);
         showMessage("Mud drag", 350);
       }
       if (terrainAt(next, game.iceTiles) && game.mutations.acidicSlime <= 0) {
         addEffect("Slow Time", 12);
         showMessage("Ice slip", 350);
+      }
+
+      if (willEatGoldenApple) {
+        game.grow += 2;
+        game.foodEaten = Math.min(game.foodGoal, game.foodEaten + 2);
+        game.itemValue += 2;
+        score(150);
+        addEffect("Shield", EFFECT_DURATIONS.shield);
+        showMessage("Ate Golden Apple! +150 score & Shield!", 1500);
+        audio.play("powerup");
+        spawnParticles(
+          next.x * TILE + TILE / 2,
+          next.y * TILE + TILE / 2,
+          15,
+          ["#ffd700", "#ffea00", "#ffffff"],
+          2, 5,
+          1, 4,
+          0.02
+        );
+        game.goldenApple = null;
+
+        if (game.upgrades.reaperHarvest > 0 && game.foodEaten % 3 === 0) {
+          addEffect("Haste", 12);
+          score(100);
+          showMessage("Reaper's Harvest! Haste & Score!", 1200);
+          audio.play("powerup");
+          spawnParticles(
+            next.x * TILE + TILE / 2,
+            next.y * TILE + TILE / 2,
+            12,
+            ["#ff4081", "#e040fb", "#ffffff"],
+            1.5, 4,
+            1, 3,
+            0.03
+          );
+        }
       }
 
       if (willEatFood) {
@@ -6806,6 +7013,22 @@ text-align: center;
           0.0012, 0.0028
         );
         game.food = null;
+
+        if (game.upgrades.reaperHarvest > 0 && game.foodEaten % 3 === 0) {
+          addEffect("Haste", 12);
+          score(100);
+          showMessage("Reaper's Harvest! Haste & Score!", 1200);
+          audio.play("powerup");
+          spawnParticles(
+            next.x * TILE + TILE / 2,
+            next.y * TILE + TILE / 2,
+            12,
+            ["#ff4081", "#e040fb", "#ffffff"],
+            1.5, 4,
+            1, 3,
+            0.03
+          );
+        }
       }
 
       if (willEatPoison) {
@@ -7056,6 +7279,28 @@ text-align: center;
           score(200);
           showMessage("Full hearts! +200", 900);
         }
+        if (game.upgrades.heartPulse > 0) {
+          game.enemies.forEach(enemy => {
+            enemy.stunned = (enemy.stunned || 0) + 30;
+          });
+          for (let i = game.traps.length - 1; i >= 0; i--) {
+            if (dist(next, game.traps[i]) <= 3) {
+              disarmTrap(i);
+            }
+          }
+          showMessage("Static Scales! Enemies Stunned & Traps Disarmed!", 1500);
+          audio.play("beastRoar");
+          triggerShake(10, 300);
+          spawnParticles(
+            next.x * TILE + TILE / 2,
+            next.y * TILE + TILE / 2,
+            20,
+            ["#80deea", "#26c6da", "#ffffff"],
+            1.5, 4.5,
+            1.2, 3.8,
+            0.02
+          );
+        }
         game.heartPickup = null;
         audio.play("potion");
       }
@@ -7236,6 +7481,11 @@ text-align: center;
         enemy.stunned--;
         return false;
       }
+      if (game.upgrades.lazyMonsterSleepChance > 0 && game.snake[0] && dist(enemy, game.snake[0]) <= 3 && Math.random() < game.upgrades.lazyMonsterSleepChance) {
+        enemy.stunned = 20;
+        showMessage("💤 Monster fell asleep!", 800);
+        return false;
+      }
       if (game.sludgeTiles && game.sludgeTiles.some(s => same(s, enemy)) && Math.random() < 0.65) return false;
       if (game.upgrades.enemyRepel > 0 && Math.random() < game.upgrades.enemyRepel) return false;
       if (game.upgrades.enemySlow > 0 && Math.random() < game.upgrades.enemySlow) return false;
@@ -7272,6 +7522,9 @@ text-align: center;
           // Enemy head ran into player body segment! Slither style!
           game.enemies = game.enemies.filter(e => e !== enemy);
           game.runStats.enemiesDefeated++;
+          if (game.upgrades.monsterCoinChance > 0 && Math.random() < game.upgrades.monsterCoinChance) {
+            game.gold = { x: enemy.x, y: enemy.y };
+          }
           triggerAegisSynergyCheck();
           spawnParticles(
             enemy.x * TILE + TILE / 2,
@@ -7587,10 +7840,10 @@ text-align: center;
             }
             // Render faint hidden chest behind wall when revealed by taking damage
             if (game.hiddenChests && game.hiddenChests.some(c => c.x === x && c.y === y && !c.opened)) {
-              if (game.wallChestsRevealTimer > 0) {
+              if (game.wallChestsRevealTimer > 0 || game.upgrades.revealChests > 0) {
                 const pulse = Math.sin(performance.now() / 100) * 0.15 + 0.25;
                 ctx.save();
-                ctx.globalAlpha = pulse * (game.wallChestsRevealTimer / 5000);
+                ctx.globalAlpha = (game.upgrades.revealChests > 0) ? pulse * 0.9 : pulse * (game.wallChestsRevealTimer / 5000);
                 ctx.fillStyle = "#ffd700";
                 ctx.shadowBlur = 10;
                 ctx.shadowColor = "#ffd700";
@@ -8384,6 +8637,7 @@ text-align: center;
       drawPickup(game.ghostPepper, "#c77dff", "ghostPepper");
       drawPickup(game.iceCube, "#aaddff", "iceCube");
       drawPickup(game.mapChest, "#ffd700", "mapChest");
+      drawPickup(game.goldenApple, "#ffd700", "goldenApple");
 
       /* Floating score particles */
       drawScoreParticles();
@@ -8470,6 +8724,7 @@ text-align: center;
       
       let glyph = "❓";
       if (type === "food") glyph = "🍎";
+      else if (type === "goldenApple") glyph = "🍏";
       else if (type === "poison") glyph = "🍇";
       else if (type === "gold") glyph = "🪙";
       else if (type === "potion") glyph = "🧪";
@@ -8484,7 +8739,7 @@ text-align: center;
       }
 
       // Draw magical rotating halos under/around the item
-      const isRare = ["relic", "heart", "ghostPepper", "iceCube", "gold", "mapChest"].includes(type);
+      const isRare = ["relic", "heart", "ghostPepper", "iceCube", "gold", "mapChest", "goldenApple"].includes(type);
       
       ctx.save();
       ctx.shadowBlur = 0; // Clear blur for fine lines
@@ -8640,6 +8895,12 @@ text-align: center;
       }
       if (game.upgrades.pureSpeed > 0) {
         speed *= (1 - game.upgrades.pureSpeed * 0.15);
+      }
+      if (game.upgrades.kineticImmunity > 0) {
+        speed *= 0.85;
+      }
+      if (game.upgrades.startShield > 0 && game.ticks < 35) {
+        speed *= 0.80;
       }
       return Math.max(10, speed);
     }
