@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex,nofollow,noarchive">
+    <title>Schattenseiten von KI - Einfach erklärt</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Top Progress Bar -->
+    <div class="progress-bar-container">
+        <div id="progressBar" class="progress-bar"></div>
+    </div>
+
+    <!-- Interactive Canvas Particle Background -->
+    <canvas id="bgCanvas"></canvas>
+
+    <!-- Background Glow Effects -->
+    <div class="glow-bg">
+        <div class="glow-circle glow-1"></div>
+        <div class="glow-circle glow-2"></div>
+    </div>
+
+    <!-- Header Navigation Bar -->
+    <header class="navbar">
+        <div class="logo">
+            <span class="logo-accent" data-key="logo-main">Kritik</span> <span data-key="nav-title">Schattenseiten der KI</span>
+        </div>
+        <div class="nav-controls">
+            <!-- Speaker Notes Button -->
+            <button id="btnSpeakerNotes" class="control-btn" title="Referenten-Notizen (Taste 'N') | Заметки докладчика">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 7h8M8 11h8"/></svg>
+            </button>
+            <!-- Glossary Button -->
+            <button id="btnGlossary" class="control-btn" title="Worterklärungen &amp; Begriffe | Словарь терминов">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 19.5A2.5 2.5 0 0 0 6.5 22H20M4 19.5V3a1 1 0 0 1 1-1h15v20H5a1 1 0 0 1-1-1z"/><path d="M6 6h10M6 10h10"/></svg>
+            </button>
+            <!-- Sound Synthesizer Toggle -->
+            <button id="btnSound" class="control-btn" title="Sound ein/aus | Звук вкл/выкл">
+                <svg id="soundOnIcon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+                <svg id="soundOffIcon" class="hidden" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+            </button>
+            <!-- Language Switcher Toggle -->
+            <div class="lang-selector">
+                <button id="langDE" class="lang-btn active">DE</button>
+                <button id="langRU" class="lang-btn">RU</button>
+            </div>
+            <!-- Fullscreen Button -->
+            <button id="btnFullscreen" class="control-btn" title="Vollbild / Полный экран">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Presentation Workspace (16:9 Aspect Ratio) -->
+    <main class="presentation-container">
+        <div class="slide-deck" id="slideDeck">
+            
+            <!-- SLIDE 1: INTRO / TITEL -->
+            <section class="slide active" id="slide-1" style="background-image: linear-gradient(to bottom, rgba(7, 10, 18, 0.88), rgba(7, 10, 18, 0.96)), url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80'); background-size: cover; background-position: center;">
+                <div class="slide-content intro-slide">
+                    <div class="intro-badge">
+                        <span class="pulse-dot"></span>
+                        <span data-key="intro-badge-text">Kritik statt KI-Hype</span>
+                    </div>
+                    <h1 class="slide-title" data-key="intro-title">Warum KI gefährlich sein kann</h1>
+                    <h2 class="slide-subtitle" data-key="intro-subtitle">Macht, Kontrolle und Schäden durch künstliche Intelligenz</h2>
+                    <p class="intro-description" data-key="intro-desc">
+                        KI wird oft als Fortschritt verkauft. Wir schauen kritisch darauf, wer davon profitiert und wer die Folgen trägt.
+                    </p>
+                    <button class="action-btn" onclick="nextSlide()">
+                        <span data-key="intro-btn">Präsentation starten</span>
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                    </button>
+                </div>
+            </section>
+
+            <!-- SLIDE 2: AGENDA / THEMENÜBERSICHT -->
+            <section class="slide" id="slide-2">
+                <div class="slide-content">
+                    <div class="slide-header">
+                        <span class="slide-number">02</span>
+                        <h2 class="slide-section-title" data-key="agenda-title">Themenübersicht &amp; Agenda</h2>
+                    </div>
+                    <div class="agenda-grid">
+                        <div class="agenda-card" onclick="goToSlide(3)">
+                            <div class="agenda-num">03</div>
+                            <h3 data-key="slide3-title">Arbeitsmarkt &amp; Jobs</h3>
+                            <p data-key="slide3-teaser">Wie KI Jobs billiger machen und Menschen ersetzen kann.</p>
+                        </div>
+                        <div class="agenda-card" onclick="goToSlide(4)">
+                            <div class="agenda-num">04</div>
+                            <h3 data-key="slide4-title">Urheberrecht &amp; Kunst</h3>
+                            <p data-key="slide4-teaser">KI nutzt oft fremde Werke, ohne die Urheber fair zu bezahlen.</p>
+                        </div>
+                        <div class="agenda-card" onclick="goToSlide(5)">
+                            <div class="agenda-num">05</div>
+                            <h3 data-key="slide5-title">Datenschutz &amp; Deepfakes</h3>
+                            <p data-key="slide5-teaser">?berwachung und F?lschungen greifen Vertrauen und Demokratie an.</p>
+                        </div>
+                        <div class="agenda-card" onclick="goToSlide(6)">
+                            <div class="agenda-num">06</div>
+                            <h3 data-key="slide6-title">KI-Bild oder echtes Foto?</h3>
+                            <p data-key="slide6-teaser">Stimmt ab, welches Bild real ist.</p>
+                        </div>
+                        <div class="agenda-card" onclick="goToSlide(7)">
+                            <div class="agenda-num">07</div>
+                            <h3>KI-Musik oder echte Musik?</h3>
+                            <p>Hört drei Beispiele und stimmt ab, welches nicht von KI ist.</p>
+                        </div>
+                        <div class="agenda-card" onclick="goToSlide(8)">
+                            <div class="agenda-num">08</div>
+                            <h3 data-key="slide7-title">Umweltbelastung</h3>
+                            <p data-key="slide7-teaser">Der KI-Boom verbraucht Strom, Wasser und Rohstoffe.</p>
+                        </div>
+                        <div class="agenda-card" onclick="goToSlide(9)">
+                            <div class="agenda-num">09</div>
+                            <h3 data-key="slide8-title">Ethische Gefahren</h3>
+                            <p data-key="slide8-teaser">Wenn Maschinen entscheiden, kann Verantwortung verschwinden.</p>
+                        </div>
+                        <div class="agenda-card highlighted" onclick="goToSlide(10)">
+                            <div class="agenda-num">10</div>
+                            <h3 data-key="slide9-title">L?sungen &amp; Fazit</h3>
+                            <p data-key="slide9-teaser">Warum KI klare Grenzen braucht.</p>
+                        </div>
+                        <div class="agenda-card highlighted" onclick="goToSlide(11)">
+                            <div class="agenda-num">11</div>
+                            <h3 data-key="slide10-title">Klassen-Wissensquiz</h3>
+                            <p data-key="slide10-teaser">Das Quiz zum Schluss.</p>
+                        </div>
+                        <div class="agenda-card highlighted" onclick="goToSlide(12)">
+                            <div class="agenda-num">12</div>
+                            <h3 data-key="slide11-title">Quellen &amp; Studien</h3>
+                            <p data-key="slide11-teaser">Die wichtigsten Quellen.</p>
+                        </div>
+                    </div>                    </div>
+                </div>
+            </section>
+
+            <!-- SLIDE 3: ARBEITSMARKT & JOBVERDRÄNGUNG -->
+            <section class="slide" id="slide-3" style="background-image: linear-gradient(to bottom, rgba(7, 10, 18, 0.9), rgba(7, 10, 18, 0.95)), url('https://images.unsplash.com/photo-1531746790731-6c087fecd793?auto=format&fit=crop&w=1200&q=80'); background-size: cover; background-position: center;">
+                <div class="slide-content">
+                    <div class="slide-header">
+                        <span class="slide-number">03</span>
+                        <h2 class="slide-section-title" data-key="slide3-heading">Arbeitsmarkt &amp; Jobverdrängung</h2>
+                    </div>
+                    <div class="two-column-layout">
+                        <div class="column">
+                            <p class="slide-text" data-key="slide3-text-1">
+                                KI wird von Firmen oft eingesetzt, um Arbeit schneller und billiger zu machen. Das klingt effizient, kann aber bedeuten: Menschen werden ersetzt, Löhne geraten unter Druck und Berufe verlieren an Wert.
+                            </p>
+                            <p class="slide-text warning-text" data-key="slide3-text-2">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 5px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0zM12 9v4M12 17h.01"/></svg>
+                                Gefahr: Die Gewinne landen oft bei Firmen, während Beschäftigte die Unsicherheit tragen. Wer keine Weiterbildung bekommt, wird schnell abgehängt.
+                            </p>
+                            <!-- Interaction selector buttons -->
+                            <div class="sector-buttons">
+                                <button class="sector-btn active" onclick="selectSector('office')">
+                                    <span data-key="sector-btn-office">Büro &amp; Verwaltung</span>
+                                </button>
+                                <button class="sector-btn" onclick="selectSector('routine')">
+                                    <span data-key="sector-btn-routine">Industrie &amp; Routine</span>
+                                </button>
+                                <button class="sector-btn" onclick="selectSector('creative')">
+                                    <span data-key="sector-btn-creative">Kreativsektor</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="column">
+                            <div class="glass-card interactive-card" id="sectorCard">
+                                <div class="card-header-accent">
+                                    <span id="sectorTitle" data-key="sector-title-office">Büro, Verwaltung &amp; Kundenservice</span>
+                                    <span class="risk-badge badge-high" id="sectorRisk" data-key="risk-high">Risiko: Hoch (85%)</span>
+                                </div>
+                                <div class="card-body">
+                                    <h4 data-key="affected-title">Betroffene Jobs:</h4>
+                                    <p id="sectorJobs" data-key="sector-jobs-office">Sachbearbeitung, Dateneingabe, Kundenservice, Buchhaltung und einfache Rechtsarbeit.</p>
+                                    <h4 style="margin-top: 15px;" data-key="consequence-title">Folgen:</h4>
+                                    <p id="sectorDesc" data-key="sector-desc-office">KI kann Berichte, E-Mails und einfache Analysen schnell schreiben. Für Firmen spart das Geld. Für Beschäftigte kann es Stellenabbau bedeuten.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SLIDE 4: URHEBERRECHT & GEISTIGES EIGENTUM -->
+            <section class="slide" id="slide-4" style="background-image: linear-gradient(to bottom, rgba(7, 10, 18, 0.9), rgba(7, 10, 18, 0.95)), url('https://images.unsplash.com/photo-1547891654-e66ed7edd96c?auto=format&fit=crop&w=1200&q=80'); background-size: cover; background-position: center;">
+                <div class="slide-content">
+                    <div class="slide-header">
+                        <span class="slide-number">04</span>
+                        <h2 class="slide-section-title" data-key="slide4-heading">Urheberrecht &amp; Trainingsdaten</h2>
+                    </div>
+                    <div class="two-column-layout">
+                        <div class="column">
+                            <p class="slide-text" data-key="slide4-text-1">
+                                Viele KI-Modelle wurden mit Bildern, Texten und Liedern echter Menschen trainiert. Oft wurden diese Menschen nicht gefragt, nicht genannt und nicht bezahlt. Das ist kein kleiner Nebeneffekt, sondern ein zentrales Problem.
+                            </p>
+                            <div class="stat-highlight">
+                                <span class="stat-number">>90%</span>
+                                <span class="stat-label" data-key="slide4-stat-label">der Trainingsdaten können ohne klare Erlaubnis oder faire Bezahlung der Urheber genutzt worden sein.</span>
+                            </div>
+                        </div>
+                        <div class="column">
+                            <!-- Training Data Checker -->
+                            <div class="glass-card scraper-card">
+                                <h3 class="simulator-title" data-key="scraper-title">Trainingsdaten-Checker</h3>
+                                <p class="simulator-desc" data-key="scraper-desc">Prüfe Beispiele, die eine KI zum Lernen benutzen könnte:</p>
+                                
+                                <div class="simulator-selectors">
+                                    <div class="selector-row">
+                                        <span class="sel-label" data-key="sel-lbl-artist">Beispiel:</span>
+                                        <div class="mini-btn-group" id="artistSelect">
+                                            <button class="mini-btn active" onclick="selectScrapeArtist('news')">News-Artikel</button>
+                                            <button class="mini-btn" onclick="selectScrapeArtist('photo')">Klassenfoto</button>
+                                            <button class="mini-btn" onclick="selectScrapeArtist('lyrics')">Songtext</button>
+                                        </div>
+                                    </div>
+                                    <div class="selector-row" style="margin-top: 10px;">
+                                        <span class="sel-label" data-key="sel-lbl-subject">Prüfung:</span>
+                                        <div class="mini-btn-group" id="subjectSelect">
+                                            <button class="mini-btn active" onclick="selectScrapeSubject('permission')">Erlaubnis</button>
+                                            <button class="mini-btn" onclick="selectScrapeSubject('source')">Quelle</button>
+                                            <button class="mini-btn" onclick="selectScrapeSubject('payment')">Bezahlung</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Dynamic Dataset Inspection Area -->
+                                <div class="scraper-canvas-area" id="scraperVisualizer">
+                                    <div class="neural-lines" id="neuralLines"></div>
+                                    <div class="scraped-image-wrapper">
+                                        <div id="styledSVGContainer" class="styled-svg-container">
+                                            <!-- data cards injected dynamically -->
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="ai-inspector" id="scraperAiInspector">
+                                    <div class="ai-inspector-title">KI-Trainingsprüfung</div>
+                                    <div class="ai-prompt-box" id="scraperPrompt">Datensatz wird vorbereitet...</div>
+                                    <div class="token-row" id="scraperTokens"></div>
+                                </div>
+
+                                <button class="action-btn-sm" id="btnRunScraper" onclick="runStyleScraper()">
+                                    <span data-key="btn-run-scraper">Datensatz prüfen</span>
+                                </button>
+
+                                <div class="scraper-status" id="scraperStatus">
+                                    <span data-key="scraper-status-idle">Checker bereit.</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SLIDE 6: DATENSCHUTZ, ÜBERWACHUNG & DEEPFAKES -->
+            <section class="slide" id="slide-5" style="background-image: linear-gradient(to bottom, rgba(7, 10, 18, 0.9), rgba(7, 10, 18, 0.95)), url('https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1200&q=80'); background-size: cover; background-position: center;">
+                <div class="slide-content">
+                    <div class="slide-header">
+                        <span class="slide-number">05</span>
+                        <h2 class="slide-section-title" data-key="slide6-heading">Datenschutz &amp; Deepfakes</h2>
+                    </div>
+                    <div class="two-column-layout">
+                        <div class="column">
+                            <p class="slide-text" data-key="slide6-text-1">
+                                KI macht Überwachung billiger und schneller. Gleichzeitig können <span class="glossary-term" data-term="deepfakes">Deepfakes</span> Bilder, Stimmen und Videos fälschen. Das greift Vertrauen an: Man weiß immer schwerer, was echt ist.
+                            </p>
+                            <ul class="styled-list">
+                                <li data-key="slide6-li-1">**Gesichtserkennung:** Menschen können im öffentlichen Raum verfolgt und gespeichert werden.</li>
+                                <li data-key="slide6-li-2">**Manipulation:** Deepfakes können Wahlen, Meinungen und Krisen beeinflussen.</li>
+                                <li data-key="slide6-li-3">**Betrug:** Täter können Stimmen kopieren und Menschen mit Fake-Anrufen unter Druck setzen.</li>
+                            </ul>
+                        </div>
+                        <div class="column">
+                            <!-- Interactive Deepfake Detector Game -->
+                            <div class="glass-card quiz-card">
+                                <h3 class="quiz-title" data-key="quiz-title">Deepfake-Detektor Mini-Test</h3>
+                                
+                                <div class="scenario-visual-container">
+                                    <div id="visualWaveform" class="waveform hidden">
+                                        <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+                                    </div>
+                                    <div id="visualScan" class="scan-image-effect hidden">
+                                        <div class="scan-line"></div>
+                                        <div class="scan-overlay"></div>
+                                        <div class="scan-nodes"></div>
+                                    </div>
+                                </div>
+
+                                <p class="quiz-desc" data-key="quiz-desc">Kannst du echt und gefälscht unterscheiden? Lies das Beispiel und entscheide:</p>
+                                <div class="quiz-scenario">
+                                    <p id="quizScenarioText" data-key="quiz-q1-text">"Dein Chef ruft dich scheinbar an. Er klingt sehr aufgeregt und bittet dich, sofort Geld auf ein neues Konto zu überweisen. Die Stimme klingt genau wie seine."</p>
+                                </div>
+                                <div class="ai-inspector compact" id="deepfakeInspector">
+                                    <div class="ai-inspector-title">KI-Detektor prüft Merkmale</div>
+                                    <div class="detector-feature-list" id="detectorFeatures"></div>
+                                </div>
+                                <div class="quiz-options">
+                                    <button class="quiz-btn" onclick="checkQuizAnswer(true)"><span data-key="quiz-btn-real">Echt</span></button>
+                                    <button class="quiz-btn button-warn" onclick="checkQuizAnswer(false)"><span data-key="quiz-btn-fake">Gefälscht / Deepfake</span></button>
+                                </div>
+                                <div class="quiz-feedback hidden" id="quizFeedback">
+                                    <span id="quizFeedbackText"></span>
+                                    <button class="quiz-next-btn" onclick="nextQuiz()"><span data-key="quiz-btn-next">Nächstes Szenario</span></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SLIDE 6: KI-BILD ODER ECHTES FOTO -->
+            <section class="slide" id="slide-6" style="background-image: linear-gradient(to bottom, rgba(7, 10, 18, 0.9), rgba(7, 10, 18, 0.95)), url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80'); background-size: cover; background-position: center;">
+                <div class="slide-content">
+                    <div class="slide-header">
+                        <span class="slide-number">06</span>
+                        <h2 class="slide-section-title" data-key="image-heading">KI-Bild oder echtes Foto?</h2>
+                    </div>
+                    <div class="two-column-layout">
+                        <div class="column">
+                            <p class="slide-text" data-key="image-text-1">
+                                KI-Bilder werden immer realistischer. Das Problem: Wenn gef?lschte Bilder echt aussehen, k?nnen Menschen leichter get?uscht werden. Deshalb muss man Details pr?fen und nicht nur dem ersten Eindruck vertrauen.
+                            </p>
+                            <p class="slide-text warning-text" data-key="image-text-2">
+                                Aufgabe: Schaut euch beide Bilder an und stimmt ab. Welches Bild ist ein echtes Foto?
+                            </p>
+                            <div class="ai-inspector compact">
+                                <div class="ai-inspector-title">Worauf achten?</div>
+                                <div class="detector-feature-list">
+                                    <span class="feature-chip fake">komische H?nde</span>
+                                    <span class="feature-chip fake">unlogische Schatten</span>
+                                    <span class="feature-chip fake">falsche Schrift</span>
+                                    <span class="feature-chip real">nat?rliche Details</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="column">
+                            <div class="glass-card image-vote-card">
+                                <div class="image-compare-grid">
+                                    <button class="image-choice" onclick="voteRealImage('a')" id="imageChoiceA">
+                                        <span class="image-label">Bild A</span>
+                                        <img src="images/ai_left.png" alt="KI-generiertes Stadt-Selfie">
+                                        <span class="vote-count"><span id="voteImageA">0</span> Stimmen</span>
+                                    </button>
+                                    <button class="image-choice" onclick="voteRealImage('b')" id="imageChoiceB">
+                                        <span class="image-label">Bild B</span>
+                                        <img src="images/real_right.png" alt="Echtes Foto einer Frau im Park">
+                                        <span class="vote-count"><span id="voteImageB">0</span> Stimmen</span>
+                                    </button>
+                                </div>
+                                <div class="image-vote-result" id="imageVoteResult">Noch keine Abstimmung.</div>
+                                <button class="poll-reset-btn" onclick="resetImageVote()">Abstimmung zur?cksetzen</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SLIDE 7: KI-MUSIK ODER ECHTE MUSIK -->
+            <section class="slide" id="slide-7" style="background-image: linear-gradient(to bottom, rgba(7, 10, 18, 0.9), rgba(7, 10, 18, 0.95)), url('https://images.unsplash.com/photo-1516280440614-37939bbacd81?auto=format&fit=crop&w=1200&q=80'); background-size: cover; background-position: center;">
+                <div class="slide-content">
+                    <div class="slide-header">
+                        <span class="slide-number">07</span>
+                        <h2 class="slide-section-title">KI-Musik oder echte Musik?</h2>
+                    </div>
+                    <div class="two-column-layout">
+                        <div class="column">
+                            <p class="slide-text">
+                                KI kann heute auch Musik erzeugen. Das klingt oft beeindruckend, aber es wirft Fragen auf: Wurden echte Musiker fair behandelt? Und erkennen wir noch, was menschlich gemacht ist?
+                            </p>
+                            <p class="slide-text warning-text">
+                                Aufgabe: Hört euch alle drei Musikstücke an. Stimmt dann ab: Welches Stück ist nicht KI-generiert?
+                            </p>
+                            <div class="ai-inspector compact">
+                                <div class="ai-inspector-title">Worauf achten?</div>
+                                <div class="detector-feature-list">
+                                    <span class="feature-chip fake">zu glatte Stimme</span>
+                                    <span class="feature-chip fake">komische Übergänge</span>
+                                    <span class="feature-chip fake">wiederholte Muster</span>
+                                    <span class="feature-chip real">natürlicher Ausdruck</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="column">
+                            <div class="glass-card music-vote-card">
+                                <div class="music-compare-grid">
+                                    <button class="music-choice" onclick="voteRealMusic('a')" id="musicChoiceA">
+                                        <span class="image-label">Stück A</span>
+                                        <audio controls preload="metadata" src="audio/music_ai_a.mp3"></audio>
+                                        <span class="vote-count"><span id="voteMusicA">0</span> Stimmen</span>
+                                    </button>
+                                    <button class="music-choice" onclick="voteRealMusic('b')" id="musicChoiceB">
+                                        <span class="image-label">Stück B</span>
+                                        <audio controls preload="metadata" src="audio/music_real_b.mp3"></audio>
+                                        <span class="vote-count"><span id="voteMusicB">0</span> Stimmen</span>
+                                    </button>
+                                    <button class="music-choice" onclick="voteRealMusic('c')" id="musicChoiceC">
+                                        <span class="image-label">Stück C</span>
+                                        <audio controls preload="metadata" src="audio/music_ai_c.mp3"></audio>
+                                        <span class="vote-count"><span id="voteMusicC">0</span> Stimmen</span>
+                                    </button>
+                                </div>
+                                <div class="image-vote-result" id="musicVoteResult">Noch keine Abstimmung.</div>
+                                <button class="poll-reset-btn" onclick="resetMusicVote()">Abstimmung zurücksetzen</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SLIDE 8: DER ÖKOLOGISCHE FUSABDRUCK -->
+            <section class="slide" id="slide-8" style="background-image: linear-gradient(to bottom, rgba(7, 10, 18, 0.9), rgba(7, 10, 18, 0.95)), url('https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1200&q=80'); background-size: cover; background-position: center;">
+                <div class="slide-content">
+                    <div class="slide-header">
+                        <span class="slide-number">08</span>
+                        <h2 class="slide-section-title" data-key="slide8-heading">Der ökologische Fußabdruck der KI</h2>
+                    </div>
+                    <div class="two-column-layout">
+                        <div class="column">
+                            <p class="slide-text" data-key="slide8-text-1">
+                                KI wirkt digital und sauber, ist es aber nicht. Hinter jeder Anfrage stehen <span class="glossary-term" data-term="datacenter">Rechenzentren</span>, Grafikkarten, Stromverbrauch und Wasser zum Kühlen.
+                            </p>
+                            <div class="energy-stat">
+                                <div class="stat-card">
+                                    <span class="stat-number">x10</span>
+                                    <span class="stat-desc" data-key="slide8-stat-1">Eine KI-Suche kann ungefähr zehnmal so viel Strom brauchen wie eine normale Google-Suche. Dieser Preis wird oft nicht offen gezeigt.</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="column">
+                            <!-- Environmental calculator -->
+                            <div class="glass-card calculator-card">
+                                <h3 class="calculator-title" data-key="eco-title">Energie-Rechner</h3>
+                                <p class="calculator-desc" data-key="eco-desc">Wähle eine KI-Aktion aus. Dann siehst du, womit man den Verbrauch im Alltag vergleichen kann:</p>
+                                <div class="activity-selector">
+                                    <button class="sector-btn active" id="actQuery" onclick="selectEcoActivity('query')"><span data-key="eco-act-query">10 einfache Prompts</span></button>
+                                    <button class="sector-btn" id="actImage" onclick="selectEcoActivity('image')"><span data-key="eco-act-image">1 Bildgenerierung</span></button>
+                                    <button class="sector-btn" id="actTrain" onclick="selectEcoActivity('train')"><span data-key="eco-act-train">Training großer Sprachmodelle</span></button>
+                                </div>
+                                <div class="ai-inspector compact" id="ecoAiInspector">
+                                    <div class="ai-inspector-title">Was die KI dabei macht</div>
+                                    <div class="ai-prompt-box" id="ecoAiExample">10 Prompts werden in Tokens zerlegt und durch ein Sprachmodell berechnet.</div>
+                                </div>
+                                <div class="eco-metrics">
+                                    <!-- Metric 1 -->
+                                    <div class="eco-metric-row">
+                                        <div class="eco-metric-header">
+                                            <span class="eco-icon">💡</span>
+                                            <span class="eco-label" data-key="eco-lbl-light">Betrieb einer LED-Lampe (9W)</span>
+                                            <span class="eco-val" id="ecoLight">0.5 Std.</span>
+                                        </div>
+                                        <div class="eco-visual-bar-track">
+                                            <div class="eco-visual-bar-fill" id="fillLight" style="width: 5%"></div>
+                                        </div>
+                                    </div>
+                                    <!-- Metric 2 -->
+                                    <div class="eco-metric-row">
+                                        <div class="eco-metric-header">
+                                            <span class="eco-icon">📱</span>
+                                            <span class="eco-label" data-key="eco-lbl-phone">Smartphone voll laden</span>
+                                            <span class="eco-val" id="ecoPhone">1,2 Mal</span>
+                                        </div>
+                                        <div class="eco-visual-bar-track">
+                                            <div class="eco-visual-bar-fill fill-amber" id="fillPhone" style="width: 5%"></div>
+                                        </div>
+                                    </div>
+                                    <!-- Metric 3 -->
+                                    <div class="eco-metric-row">
+                                        <div class="eco-metric-header">
+                                            <span class="eco-icon">💧</span>
+                                            <span class="eco-label" data-key="eco-lbl-water">Wasser zum Kühlen</span>
+                                            <span class="eco-val" id="ecoWater">0,5 Liter</span>
+                                        </div>
+                                        <div class="eco-visual-bar-track">
+                                            <div class="eco-visual-bar-fill fill-rose" id="fillWater" style="width: 5%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SLIDE 9: ETHISCHE RISIKEN & ALIGNMENT -->
+            <section class="slide" id="slide-9" style="background-image: linear-gradient(to bottom, rgba(7, 10, 18, 0.9), rgba(7, 10, 18, 0.95)), url('https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=1200&q=80'); background-size: cover; background-position: center;">
+                <div class="slide-content">
+                    <div class="slide-header">
+                        <span class="slide-number">09</span>
+                        <h2 class="slide-section-title" data-key="slide9-heading">Ethische Risiken &amp; Kontrollverlust</h2>
+                    </div>
+                    <div class="two-column-layout">
+                        <div class="column">
+                            <p class="slide-text" data-key="slide9-text-1">
+                                Je mehr Entscheidungen an KI abgegeben werden, desto weniger durchschaubar wird Verantwortung. Besonders gefährlich ist das bei Waffen, Medizin, Polizei und Schule.
+                            </p>
+                            <p class="slide-text" data-key="slide9-text-2">
+                                Das Kontroll-Problem bedeutet: Eine KI kann Ziele falsch verstehen oder Schlupflöcher finden. Dann entsteht Schaden, obwohl niemand genau sagen kann, wer ihn direkt wollte.
+                            </p>
+                        </div>
+                        <div class="column">
+                            <div class="flip-deck">
+                                <!-- Flip Card 1 -->
+                                <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                                    <div class="flip-card-inner">
+                                        <div class="flip-card-front">
+                                            <div class="flip-icon">⚔️</div>
+                                            <h4 data-key="flip1-title">Autonome Waffen</h4>
+                                            <p class="click-info" data-key="click-to-flip">Klicken zum Umdrehen</p>
+                                        </div>
+                                        <div class="flip-card-back">
+                                            <p data-key="flip1-desc">Drohnen oder Waffen könnten selbst entscheiden, wen sie angreifen. Wenn Menschen nicht mehr prüfen, wird Töten technischer und Verantwortung verschwindet.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Flip Card 2 -->
+                                <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                                    <div class="flip-card-inner">
+                                        <div class="flip-card-front">
+                                            <div class="flip-icon">⚖️</div>
+                                            <h4 data-key="flip2-title">Wer ist verantwortlich?</h4>
+                                            <p class="click-info" data-key="click-to-flip">Klicken zum Umdrehen</p>
+                                        </div>
+                                        <div class="flip-card-back">
+                                            <p data-key="flip2-desc">Wer trägt die Schuld, wenn KI im Krankenhaus falsch entscheidet oder ein Auto einen Unfall baut? Entwickler, Nutzer und Firmen können Verantwortung leicht hin- und herschieben.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Flip Card 3 -->
+                                <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                                    <div class="flip-card-inner">
+                                        <div class="flip-card-front">
+                                            <div class="flip-icon">👁️‍🗨️</div>
+                                            <h4 data-key="flip3-title">Kontrollverlust</h4>
+                                            <p class="click-info" data-key="click-to-flip">Klicken zum Umdrehen</p>
+                                        </div>
+                                        <div class="flip-card-back">
+                                            <p data-key="flip3-desc">Eine sehr starke KI könnte Ziele verfolgen, die Menschen nicht mehr kontrollieren. Dann reicht ein Ausschalter vielleicht nicht mehr aus.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SLIDE 10: FAZIT & LÖSUNGSANSÄTZE & LIVE POLL -->
+            <section class="slide" id="slide-10">
+                <div class="slide-content">
+                    <div class="slide-header">
+                        <span class="slide-number">10</span>
+                        <h2 class="slide-section-title" data-key="slide10-heading">Fazit &amp; Lösungen</h2>
+                    </div>
+                    <div class="two-column-layout">
+                        <div class="column">
+                            <p class="slide-text" data-key="slide10-text-1">
+                                KI ist kein harmloses Spielzeug. Ohne Regeln kann sie Macht konzentrieren, Arbeit entwerten, Wahrheit beschädigen und Menschen überwachen. Deshalb braucht sie klare Grenzen.
+                            </p>
+                            <!-- Live Class Poll Widget -->
+                            <div class="glass-card poll-card" style="margin-top: 15px;">
+                                <h3 class="poll-title" data-key="poll-title">Live-Klassenabstimmung</h3>
+                                <p class="poll-desc" data-key="poll-desc">Sollten starke KI-Modelle erst erlaubt sein, wenn sie geprüft und kontrolliert werden?</p>
+                                
+                                <div class="poll-actions">
+                                    <button class="poll-btn poll-yes" onclick="castClassVote('yes')">
+                                        <span data-key="poll-btn-yes">Ja</span> (<span id="voteYesCount">0</span>)
+                                    </button>
+                                    <button class="poll-btn poll-no" onclick="castClassVote('no')">
+                                        <span data-key="poll-btn-no">Nein</span> (<span id="voteNoCount">0</span>)
+                                    </button>
+                                    <button class="poll-btn poll-neutral" onclick="castClassVote('neutral')">
+                                        <span data-key="poll-btn-neutral">Enthaltung</span> (<span id="voteNeutralCount">0</span>)
+                                    </button>
+                                </div>
+
+                                <div class="poll-results">
+                                    <!-- Yes bar -->
+                                    <div class="poll-bar-wrapper">
+                                        <div class="poll-bar-label"><span data-key="poll-lbl-yes">Ja / Да</span>: <span id="pctYes">0%</span></div>
+                                        <div class="poll-bar-track"><div class="poll-bar-fill fill-cyan" id="barYes" style="width: 0%"></div></div>
+                                    </div>
+                                    <!-- No bar -->
+                                    <div class="poll-bar-wrapper">
+                                        <div class="poll-bar-label"><span data-key="poll-lbl-no">Nein / Нет</span>: <span id="pctNo">0%</span></div>
+                                        <div class="poll-bar-track"><div class="poll-bar-fill fill-rose" id="barNo" style="width: 0%"></div></div>
+                                    </div>
+                                    <!-- Neutral bar -->
+                                    <div class="poll-bar-wrapper">
+                                        <div class="poll-bar-label"><span data-key="poll-lbl-neutral">Enthaltung / Воздержался</span>: <span id="pctNeutral">0%</span></div>
+                                        <div class="poll-bar-track"><div class="poll-bar-fill fill-amber" id="barNeutral" style="width: 0%"></div></div>
+                                    </div>
+                                </div>
+                                <div class="poll-footer">
+                                    <button class="poll-reset-btn" onclick="resetClassVotes()"><span data-key="poll-btn-reset">Zurücksetzen</span></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="column">
+                            <div class="glass-card roadmap-card">
+                                <h3 class="roadmap-title" data-key="roadmap-title">Wege zu sicherer KI</h3>
+                                <div class="roadmap-timeline">
+                                    <div class="roadmap-item" onclick="toggleRoadmapItem(1)">
+                                        <div class="roadmap-marker">1</div>
+                                        <div class="roadmap-body">
+                                            <h4 data-key="road1-title">Strenge Gesetze statt Vertrauen auf Firmen</h4>
+                                            <p class="roadmap-details hidden" id="road-det-1" data-key="road1-desc">Gefährliche KI darf nicht einfach ausprobiert werden. Gesetze müssen prüfen, begrenzen und notfalls verbieten.</p>
+                                        </div>
+                                    </div>
+                                    <div class="roadmap-item" onclick="toggleRoadmapItem(2)">
+                                        <div class="roadmap-marker">2</div>
+                                        <div class="roadmap-body">
+                                            <h4 data-key="road2-title">Offenlegen, womit KI trainiert wurde</h4>
+                                            <p class="roadmap-details hidden" id="road-det-2" data-key="road2-desc">Firmen sollten nicht verstecken dürfen, welche Daten sie nutzen. Nur so erkennt man Datenklau, Vorurteile und Sicherheitsrisiken.</p>
+                                        </div>
+                                    </div>
+                                    <div class="roadmap-item" onclick="toggleRoadmapItem(3)">
+                                        <div class="roadmap-marker">3</div>
+                                        <div class="roadmap-body">
+                                            <h4 data-key="road3-title">Digitale Aufklärung</h4>
+                                            <p class="roadmap-details hidden" id="road-det-3" data-key="road3-desc">Menschen müssen lernen, KI-Ergebnisse kritisch zu prüfen. Nicht alles, was technisch wirkt, ist wahr oder fair.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SLIDE 11: GAMIFIED CLASSROOM QUIZ -->
+            <section class="slide" id="slide-11">
+                <div class="slide-content">
+                    <div class="slide-header">
+                        <span class="slide-number">11</span>
+                        <h2 class="slide-section-title" data-key="slide11-heading">Das große Klassen-Quiz</h2>
+                    </div>
+                    <div class="two-column-layout">
+                        <div class="column">
+                            <p class="slide-text" data-key="slide11-text-1">
+                                Testen wir euer Wissen! Ruft eure Antworten im Raum auf oder meldet euch. Mal sehen, wer am besten aufgepasst hat.
+                            </p>
+                            <!-- Active Question Card -->
+                            <div class="glass-card active-quiz-card">
+                                <div class="quiz-progress-indicator">
+                                    <span data-key="quiz-lbl-question">Frage</span> <span id="quizActiveIndex">1</span>/3
+                                </div>
+                                <h3 class="quiz-question-title" id="classQuizQuestion" data-key="quiz-q1-title">Frage wird geladen...</h3>
+                                
+                                <div class="quiz-class-options" id="classQuizOptions">
+                                    <!-- Clickable options generated dynamically by JS -->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="column">
+                            <!-- Quiz Status & Score Box -->
+                            <div class="glass-card quiz-results-card" id="quizScoreCard">
+                                <h3 class="roadmap-title" data-key="quiz-score-title">Euer Spielstand</h3>
+                                <div class="score-display">
+                                    <span class="score-number" id="classQuizScore">0</span>
+                                    <span class="score-label" data-key="quiz-score-points">Punkte</span>
+                                </div>
+                                <div class="quiz-feedback-box hidden" id="classQuizFeedback">
+                                    <h4 id="classQuizFeedbackHeader">Richtig!</h4>
+                                    <p id="classQuizFeedbackBody">Erklärung...</p>
+                                    <button class="action-btn-sm" id="btnNextQuizRound" onclick="nextQuizRound()" style="margin-top: 10px;">
+                                        <span data-key="quiz-btn-next-round">Nächste Frage</span>
+                                    </button>
+                                </div>
+                                <div class="quiz-final-actions hidden" id="quizFinalActions">
+                                    <p class="slide-text text-cyan" id="quizFinalMsg" data-key="quiz-final-perfect">Genial! Ihr habt alle Fragen richtig beantwortet! 🎉</p>
+                                    <button class="action-btn-sm" onclick="restartClassQuiz()"><span data-key="quiz-btn-restart">Quiz neu starten</span></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SLIDE 12: QUELLEN & REFERENZEN -->
+            <section class="slide" id="slide-12">
+                <div class="slide-content">
+                    <div class="slide-header">
+                        <span class="slide-number">12</span>
+                        <h2 class="slide-section-title" data-key="slide12-heading">Quellen &amp; Wissenschaftliche Studien</h2>
+                    </div>
+                    <div class="sources-grid">
+                        <!-- Source Card 1 -->
+                        <div class="source-card">
+                            <div class="source-icon">📊</div>
+                            <h4 data-key="source1-title">McKinsey Global Institute</h4>
+                            <p class="source-author" data-key="source1-author">Studie: "The future of work after COVID-19" (2021)</p>
+                            <p class="source-details" data-key="source1-desc">Fundierte Analysen über die Verdrängung und den Wandel von über 45 Millionen Arbeitsstellen durch intelligente Automatisierungs-Systeme.</p>
+                        </div>
+                        <!-- Source Card 2 -->
+                        <div class="source-card">
+                            <div class="source-icon">⚖️</div>
+                            <h4 data-key="source2-title">Europäische Union (EU AI Act)</h4>
+                            <p class="source-author" data-key="source2-author">Gesetzblatt der EU (2024)</p>
+                            <p class="source-details" data-key="source2-desc">Das weltweit erste Gesetz zur Einstufung und strengen Regulierung von Hochrisiko-KI (z.B. Verbot biometrischer Massenüberwachung).</p>
+                        </div>
+                        <!-- Source Card 3 -->
+                        <div class="source-card">
+                            <div class="source-icon">✊</div>
+                            <h4 data-key="source3-title">Joy Buolamwini (Gender Shades)</h4>
+                            <p class="source-author" data-key="source3-author">MIT Media Lab (2018)</p>
+                            <p class="source-details" data-key="source3-desc">Die bahnbrechende wissenschaftliche Arbeit, die nachwies, dass kommerzielle Gesichtserkennungen bei schwarzen Frauen Fehlerquoten von bis zu 35% aufweisen.</p>
+                        </div>
+                        <!-- Source Card 4 -->
+                        <div class="source-card">
+                            <div class="source-icon">💧</div>
+                            <h4 data-key="source4-title">International Energy Agency (IEA)</h4>
+                            <p class="source-author" data-key="source4-author">Report: "Electricity 2024"</p>
+                            <p class="source-details" data-key="source4-desc">Offizieller Bericht über den Anstieg des Stromverbrauchs weltweiter Rechenzentren, der sich durch den KI-Boom bis 2026 verdoppeln wird.</p>
+                        </div>
+                        <!-- Source Card 5 -->
+                        <div class="source-card">
+                            <div class="source-icon">💬</div>
+                            <h4 data-key="source5-title">Sherry Turkle (MIT Study)</h4>
+                            <p class="source-author" data-key="source5-author">Buch: "Reclaiming Conversation" (2015)</p>
+                            <p class="source-details" data-key="source5-desc">Langzeitforschung über den schleichenden Verlust echter menschlicher Empathie und Dialogkompetenz durch virtuelle Beziehungs-Ersätze.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- Sidebar Drawer for Table of Contents -->
+    <div class="toc-drawer" id="tocDrawer">
+        <div class="toc-header">
+            <h3 data-key="toc-header-title">Folien-Index</h3>
+            <button id="btnCloseTOC" class="close-btn">&times;</button>
+        </div>
+        <ul class="toc-list">
+            <li class="toc-item active" onclick="goToSlide(1)"><span>01.</span> <span data-key="toc-slide1">Titel &amp; Intro</span></li>
+            <li class="toc-item" onclick="goToSlide(2)"><span>02.</span> <span data-key="toc-slide2">Agenda &amp; ?bersicht</span></li>
+            <li class="toc-item" onclick="goToSlide(3)"><span>03.</span> <span data-key="toc-slide3">Arbeitsmarkt &amp; Jobs</span></li>
+            <li class="toc-item" onclick="goToSlide(4)"><span>04.</span> <span data-key="toc-slide4">Urheberrecht &amp; Trainingsdaten</span></li>
+            <li class="toc-item" onclick="goToSlide(5)"><span>05.</span> <span data-key="toc-slide5">Datenschutz &amp; Deepfakes</span></li>
+            <li class="toc-item" onclick="goToSlide(6)"><span>06.</span> <span data-key="toc-slide6">Bildvergleich</span></li>
+            <li class="toc-item" onclick="goToSlide(7)"><span>07.</span> KI-Musikvergleich</li>
+            <li class="toc-item" onclick="goToSlide(8)"><span>08.</span> <span data-key="toc-slide7">Umweltbelastung</span></li>
+            <li class="toc-item" onclick="goToSlide(9)"><span>09.</span> <span data-key="toc-slide8">Ethische Gefahren</span></li>
+            <li class="toc-item" onclick="goToSlide(10)"><span>10.</span> <span data-key="toc-slide9">L?sungen &amp; Abstimmung</span></li>
+            <li class="toc-item" onclick="goToSlide(11)"><span>11.</span> <span data-key="toc-slide10">Klassen-Wissensquiz</span></li>
+            <li class="toc-item" onclick="goToSlide(12)"><span>12.</span> <span data-key="toc-slide11">Quellen &amp; Referenzen</span></li>
+        </ul>
+    </div>
+    <div class="toc-overlay" id="tocOverlay"></div>
+
+    <!-- Sidebar Drawer for Glossary (Worterklärungen) -->
+    <div class="toc-drawer" id="glossaryDrawer">
+        <div class="toc-header">
+            <h3 data-key="glossary-drawer-title">Worterklärungen</h3>
+            <button id="btnCloseGlossary" class="close-btn">&times;</button>
+        </div>
+        <div class="glossary-drawer-content" id="glossaryDrawerContent">
+            <!-- Full list of terms generated dynamically in JS -->
+        </div>
+    </div>
+    <div class="toc-overlay" id="glossaryOverlay"></div>
+
+    <!-- Sidebar Drawer for Speaker Notes (Referenten-Spickzettel) -->
+    <div class="toc-drawer speaker-drawer" id="speakerNotesDrawer">
+        <div class="toc-header">
+            <h3 data-key="speaker-drawer-title">Referenten-Spickzettel</h3>
+            <button id="btnCloseSpeakerNotes" class="close-btn">&times;</button>
+        </div>
+        <div class="speaker-drawer-content" id="speakerDrawerContent">
+            <!-- speaker notes loaded dynamically by JS -->
+        </div>
+    </div>
+
+    <!-- Interactive Glossary Modal Pop-up -->
+    <div class="glossary-modal" id="glossaryModal">
+        <div class="glossary-modal-content">
+            <button class="glossary-modal-close" onclick="closeGlossaryModal()">&times;</button>
+            <h3 id="glossaryModalTitle">Begriff</h3>
+            <p id="glossaryModalBody">Erklärung...</p>
+        </div>
+    </div>
+    <div class="glossary-modal-overlay" id="glossaryModalOverlay" onclick="closeGlossaryModal()"></div>
+
+    <!-- Footer Controls Bar -->
+    <footer class="footer-controls">
+        <div class="footer-left">
+            <button id="btnOpenTOC" class="footer-btn">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 5px;"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                <span data-key="footer-index-btn">Index anzeigen</span>
+            </button>
+            <button id="btnOpenGlossaryFooter" class="footer-btn" style="margin-left: 10px;">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 5px;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 19.5A2.5 2.5 0 0 0 6.5 22H20M4 19.5V3a1 1 0 0 1 1-1h15v20H5a1 1 0 0 1-1-1z"/><path d="M6 6h10M6 10h10"/></svg>
+                <span data-key="footer-glossary-btn">Worterklärungen</span>
+            </button>
+        </div>
+        <div class="slide-indicator">
+            <span id="currentSlideNum">1</span> / <span id="totalSlidesNum">12</span>
+        </div>
+        <div class="footer-right">
+            <button class="footer-btn nav-arrow" onclick="prevSlide()" id="btnPrev">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <button class="footer-btn nav-arrow" onclick="nextSlide()" id="btnNext">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+        </div>
+    </footer>
+
+    <!-- Custom Nano Cybernetic Cursor -->
+    <div class="custom-cursor-dot" id="customCursorDot"></div>
+    <div class="custom-cursor-circle" id="customCursorCircle"></div>
+
+    <!-- Scripts -->
+    <script src="app.js"></script>
+</body>
+</html>
