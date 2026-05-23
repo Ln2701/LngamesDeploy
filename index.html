@@ -2111,8 +2111,78 @@
         p.x += p.vx * dt * 0.06;
         p.y += p.vy * dt * 0.06;
         p.vy += p.gravity * dt * 0.06;
+        if (p.isLeaf) {
+          p.x += Math.sin(p.sinOffset + p.life * 10) * 0.4 * dt * 0.06;
+        }
+        if (p.isPollen) {
+          p.y += Math.sin(p.sinOffset + p.life * 8) * 0.25 * dt * 0.06;
+        }
         if (p.life <= 0) {
           customParticles.splice(i, 1);
+        }
+      }
+
+      if (game.running && !game.paused && !game.gameOver) {
+        const b = currentBiome();
+        if (Math.random() < 0.08) {
+          if (b.name === "Forest") {
+            customParticles.push({
+              x: Math.random() * canvas.width,
+              y: -10,
+              vx: 0.4 + Math.random() * 0.8,
+              vy: 0.6 + Math.random() * 1.0,
+              color: ["rgba(46, 125, 50, 0.45)", "rgba(102, 187, 106, 0.45)", "rgba(139, 195, 74, 0.45)"][Math.floor(Math.random() * 3)],
+              size: 2.5 + Math.random() * 3,
+              life: 1.0,
+              decay: 0.001 + Math.random() * 0.001,
+              gravity: 0,
+              isLeaf: true,
+              sinOffset: Math.random() * 100,
+              rotSpeed: 0.01 + Math.random() * 0.02
+            });
+          } else if (b.name === "Dungeon") {
+            customParticles.push({
+              x: Math.random() * canvas.width,
+              y: canvas.height + 10,
+              vx: (Math.random() - 0.5) * 0.4,
+              vy: -0.5 - Math.random() * 0.8,
+              color: ["rgba(156, 39, 176, 0.45)", "rgba(103, 58, 183, 0.45)", "rgba(224, 64, 251, 0.45)"][Math.floor(Math.random() * 3)],
+              size: 1.5 + Math.random() * 2.5,
+              life: 1.0,
+              decay: 0.0012 + Math.random() * 0.0012,
+              gravity: 0,
+              isEmber: true
+            });
+          } else if (b.name === "Grass") {
+            customParticles.push({
+              x: -10,
+              y: Math.random() * canvas.height,
+              vx: 0.5 + Math.random() * 0.8,
+              vy: (Math.random() - 0.5) * 0.3,
+              color: "rgba(240, 230, 140, 0.35)",
+              size: 1.2 + Math.random() * 2.0,
+              life: 1.0,
+              decay: 0.0008 + Math.random() * 0.0008,
+              gravity: 0,
+              isPollen: true,
+              sinOffset: Math.random() * 100
+            });
+          }
+
+          if (game.iceTiles && game.iceTiles.length > 0 && Math.random() < 0.25) {
+            customParticles.push({
+              x: Math.random() * canvas.width,
+              y: -10,
+              vx: (Math.random() - 0.3) * 0.4,
+              vy: 0.8 + Math.random() * 0.8,
+              color: "rgba(200, 240, 255, 0.6)",
+              size: 1.5 + Math.random() * 2.5,
+              life: 1.0,
+              decay: 0.001 + Math.random() * 0.001,
+              gravity: 0,
+              isSnowflake: true
+            });
+          }
         }
       }
     }
@@ -2121,6 +2191,77 @@
       for (const p of customParticles) {
         ctx.save();
         ctx.globalAlpha = Math.max(0, p.life);
+        
+        if (p.isLeaf) {
+          ctx.fillStyle = p.color;
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.life * 15 * p.rotSpeed);
+          ctx.beginPath();
+          ctx.ellipse(0, 0, p.size * p.life * 1.5, p.size * p.life * 0.7, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+          continue;
+        }
+
+        if (p.isSnowflake) {
+          ctx.strokeStyle = p.color;
+          ctx.lineWidth = 1.0;
+          ctx.beginPath();
+          ctx.moveTo(p.x - p.size, p.y);
+          ctx.lineTo(p.x + p.size, p.y);
+          ctx.moveTo(p.x, p.y - p.size);
+          ctx.lineTo(p.x, p.y + p.size);
+          ctx.stroke();
+          ctx.restore();
+          continue;
+        }
+
+        if (p.isRing) {
+          ctx.strokeStyle = p.color;
+          ctx.lineWidth = 2.5 * p.life;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.maxRadius * (1.0 - p.life), 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+          continue;
+        }
+
+        if (p.isHeart) {
+          ctx.fillStyle = p.color;
+          ctx.translate(p.x, p.y);
+          const size = p.size * (0.85 + 0.15 * Math.sin(performance.now() / 90));
+          ctx.beginPath();
+          ctx.moveTo(0, -size / 4);
+          ctx.bezierCurveTo(-size / 2, -size, -size, -size / 3, 0, size);
+          ctx.bezierCurveTo(size, -size / 3, size / 2, -size, 0, -size / 4);
+          ctx.fill();
+          ctx.restore();
+          continue;
+        }
+
+        if (p.isLensFlare) {
+          ctx.translate(p.x, p.y);
+          const rGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, p.size * 3 * (1.0 - p.life));
+          rGrad.addColorStop(0, "rgba(255, 255, 255, 0.95)");
+          rGrad.addColorStop(0.3, p.color);
+          rGrad.addColorStop(1, "rgba(255, 255, 255, 0)");
+          ctx.fillStyle = rGrad;
+          ctx.beginPath();
+          ctx.arc(0, 0, p.size * 3 * (1.0 - p.life), 0, Math.PI * 2);
+          ctx.fill();
+          
+          ctx.strokeStyle = "rgba(255, 255, 255, 0.9)";
+          ctx.lineWidth = 1.75 * p.life;
+          ctx.beginPath();
+          ctx.moveTo(-p.size * 6 * p.life, 0);
+          ctx.lineTo(p.size * 6 * p.life, 0);
+          ctx.moveTo(0, -p.size * 6 * p.life);
+          ctx.lineTo(0, p.size * 6 * p.life);
+          ctx.stroke();
+          ctx.restore();
+          continue;
+        }
+
         ctx.fillStyle = p.color;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
@@ -2359,7 +2500,9 @@
       activeMutations: [],
       adrenalineTicks: 0,
       bloatTicks: 0,
-      skinShedUsedThisFloor: false
+      skinShedUsedThisFloor: false,
+      goldenAppleFlash: 0,
+      hitstopFrames: 0
     };
 
     function randInt(min, max) {
@@ -2466,20 +2609,38 @@
     }
 
     function enemyTypeForFloor() {
-      if (game.floor < 4) return "wanderer";
-      const pool = game.floor >= 7 ? ["wanderer", "chaser", "guard"] : ["wanderer", "guard"];
-      return pool[randInt(0, pool.length - 1)];
+      const roll = Math.random();
+      if (game.floor < 4) {
+        if (roll < 0.08) return "slimeKing";
+        return "wanderer";
+      } else if (game.floor < 7) {
+        if (roll < 0.08) return "frostDrake";
+        if (roll < 0.14) return "slimeKing";
+        const pool = ["wanderer", "guard"];
+        return pool[randInt(0, pool.length - 1)];
+      } else {
+        if (roll < 0.08) return "shockWasp";
+        if (roll < 0.14) return "frostDrake";
+        const pool = ["wanderer", "guard", "chaser"];
+        return pool[randInt(0, pool.length - 1)];
+      }
     }
 
     function enemyColor(type, biome) {
       if (type === "chaser") return "#9f3945";
       if (type === "guard") return "#6e5a34";
+      if (type === "slimeKing") return "#39ff14";
+      if (type === "frostDrake") return "#86d6ff";
+      if (type === "shockWasp") return "#ffe08b";
       return biome.enemy;
     }
 
     function enemyLabel(type) {
       if (type === "chaser") return "C";
       if (type === "guard") return "G";
+      if (type === "slimeKing") return "👑";
+      if (type === "frostDrake") return "❄️";
+      if (type === "shockWasp") return "⚡";
       return "";
     }
 
@@ -3835,6 +3996,8 @@
       game.adrenalineTicks = 0;
       game.bloatTicks = 0;
       game.skinShedUsedThisFloor = false;
+      game.goldenAppleFlash = 0;
+      game.hitstopFrames = 0;
       game.sludgeTiles = [];
       game.stoneDebris = [];
       game.straightTicks = 0;
@@ -6937,15 +7100,28 @@
         addEffect("Shield", EFFECT_DURATIONS.shield);
         showMessage("Ate Golden Apple! +150 score & Shield!", 1500);
         audio.play("powerup");
-        spawnParticles(
-          next.x * TILE + TILE / 2,
-          next.y * TILE + TILE / 2,
-          15,
-          ["#ffd700", "#ffea00", "#ffffff"],
-          2, 5,
-          1, 4,
-          0.02
-        );
+        
+        // Eye Lens Flare + Hitstop pause + Golden screen flash!
+        const px = next.x * TILE + TILE / 2;
+        const py = next.y * TILE + TILE / 2;
+        spawnParticles(px, py, 15, ["#ffd700", "#ffea00", "#ffffff"], 2, 5, 1.5, 4.5);
+        customParticles.push({
+          x: px,
+          y: py,
+          vx: 0,
+          vy: 0,
+          color: "#ffd700",
+          size: 8,
+          life: 1.0,
+          decay: 0.015,
+          gravity: 0,
+          isLensFlare: true
+        });
+        
+        // Trigger high-end visual hitstop freeze (8 frames suspension) and screen flash
+        game.hitstopFrames = 8;
+        game.goldenAppleFlash = 1.0;
+
         game.goldenApple = null;
 
         if (game.upgrades.reaperHarvest > 0 && game.foodEaten % 3 === 0) {
@@ -7074,6 +7250,25 @@
         const mult = isDungeon ? 2 : 1;
         addCoins(1 * mult);
         score((75 + game.floor * 10) * mult);
+        
+        // Spawn coin explosion + expand vector ring shockwave
+        const px = next.x * TILE + TILE / 2;
+        const py = next.y * TILE + TILE / 2;
+        spawnParticles(px, py, 10, ["#ffd700", "#ffea00", "#ffffff"], 1.5, 3.5, 2.0, 4.5);
+        customParticles.push({
+          x: px,
+          y: py,
+          vx: 0,
+          vy: 0,
+          color: "rgba(255, 215, 0, 0.6)",
+          size: 0,
+          life: 1.0,
+          decay: 0.02,
+          gravity: 0,
+          isRing: true,
+          maxRadius: 35
+        });
+
         game.gold = null;
         audio.play("gold");
       }
@@ -7227,6 +7422,25 @@
         game.relics.splice(relicIndex, 1);
         addCoins((3 + game.upgrades.relicLuck) * mult);
         score((180 + game.floor * 30) * mult);
+        
+        // Relic Collection Splash + expanding shockwave ring
+        const px = next.x * TILE + TILE / 2;
+        const py = next.y * TILE + TILE / 2;
+        spawnParticles(px, py, 15, ["#ffd700", "#ffaa00", "#ffffff"], 1.8, 4.0, 2.5, 5.0);
+        customParticles.push({
+          x: px,
+          y: py,
+          vx: 0,
+          vy: 0,
+          color: relic.severedTail ? "rgba(184, 131, 255, 0.7)" : "rgba(255, 215, 0, 0.7)",
+          size: 0,
+          life: 1.0,
+          decay: 0.015,
+          gravity: 0,
+          isRing: true,
+          maxRadius: 45
+        });
+
         if (!relic.severedTail) {
           spawnEnemyNearSnake("relic");
           if (game.floor >= 4 || game.upgrades.relicLuck > 0) spawnEnemyNearSnake("relic");
@@ -7274,6 +7488,25 @@
           score(200);
           showMessage("Full hearts! +200", 900);
         }
+        
+        // Spawn rising pulsing heart icons
+        const px = next.x * TILE + TILE / 2;
+        const py = next.y * TILE + TILE / 2;
+        for (let k = 0; k < 3; k++) {
+          customParticles.push({
+            x: px + (Math.random() - 0.5) * 16,
+            y: py + (Math.random() - 0.5) * 16,
+            vx: (Math.random() - 0.5) * 0.5,
+            vy: -0.8 - Math.random() * 0.8,
+            color: ["#ff3355", "#ff6584", "#ff8da1"][Math.floor(Math.random() * 3)],
+            size: 6 + Math.random() * 4,
+            life: 1.0,
+            decay: 0.008 + Math.random() * 0.008,
+            gravity: 0,
+            isHeart: true
+          });
+        }
+
         if (game.upgrades.heartPulse > 0) {
           game.enemies.forEach(enemy => {
             enemy.stunned = (enemy.stunned || 0) + 30;
@@ -7399,6 +7632,32 @@
       let target = enemyAggroTarget(enemy);
       if (!target) target = game.snake[0];
       if (!target) return null;
+      
+      // Diagonal AI Routine for the Shock Wasp
+      if (enemy.type === "shockWasp") {
+        const DIAGONALS = {
+          upright: { x: 1, y: -1 },
+          downright: { x: 1, y: 1 },
+          upleft: { x: -1, y: -1 },
+          downleft: { x: -1, y: 1 }
+        };
+        const horizontal = target.x < enemy.x ? "left" : "right";
+        const vertical = target.y < enemy.y ? "up" : "down";
+        const preferred = vertical + horizontal; // e.g. "upleft"
+        
+        const diagDirs = [preferred, ...shuffle(Object.keys(DIAGONALS).filter(d => d !== preferred))];
+        for (const dir of diagDirs) {
+          const d = DIAGONALS[dir];
+          const next = { x: enemy.x + d.x, y: enemy.y + d.y };
+          if (game.walkableSet.has(key(next.x, next.y)) &&
+              !game.traps.some(t => same(t, next)) &&
+              !game.enemies.some(e => e !== enemy && same(e, next))) {
+            return { ...next, dir };
+          }
+        }
+        return null;
+      }
+
       if (enemy.type === "guard" && dist(enemy, target) > 5) return null;
       let preferred = enemy.dir;
       const aggroRange = enemy.type === "chaser" ? 12 : enemy.type === "guard" ? 5 : 8;
@@ -7494,18 +7753,67 @@
         enemy.wait = 0;
         return false;
       }
-      if (enemy.type !== "chaser" && Math.random() < 0.35) {
+      // Keep track of old tile for mud placement
+      const oldPos = { x: enemy.x, y: enemy.y };
+      
+      if (enemy.type !== "chaser" && enemy.type !== "slimeKing" && enemy.type !== "frostDrake" && enemy.type !== "shockWasp" && Math.random() < 0.35) {
         enemy.dir = Object.keys(DIRS)[randInt(0, 3)];
       }
+      
       const next = nextEnemyStep(enemy);
       if (next) {
         enemy.x = next.x;
         enemy.y = next.y;
         enemy.dir = next.dir;
         if (enemy.type === "guard") enemy.wait = 1;
+        
+        // Elites post-move interactions:
+        if (enemy.type === "slimeKing") {
+          // Leave trail of mud behind
+          if (game.mudTiles && !game.mudTiles.some(m => same(m, oldPos))) {
+            game.mudTiles.push(oldPos);
+            spawnParticles(
+              oldPos.x * TILE + TILE / 2,
+              oldPos.y * TILE + TILE / 2,
+              4,
+              ["#5d4329", "#a67c4b"],
+              1.0, 2.5,
+              0.5, 1.5
+            );
+          }
+        }
       } else {
         enemy.prevX = enemy.x;
         enemy.prevY = enemy.y;
+      }
+      
+      // Elite Frost Drake breath check
+      if (enemy.type === "frostDrake") {
+        enemy.breathCooldown = (enemy.breathCooldown || 0) + 1;
+        if (enemy.breathCooldown >= 8) {
+          enemy.breathCooldown = 0;
+          const d = DIRS[enemy.dir];
+          if (d) {
+            for (let step = 1; step <= 3; step++) {
+              const icePos = { x: enemy.x + d.x * step, y: enemy.y + d.y * step };
+              if (game.walkableSet.has(key(icePos.x, icePos.y))) {
+                if (!game.iceTiles.some(i => same(i, icePos))) {
+                  game.iceTiles.push(icePos);
+                  spawnParticles(
+                    icePos.x * TILE + TILE / 2,
+                    icePos.y * TILE + TILE / 2,
+                    5,
+                    ["#aaddff", "#ffffff"],
+                    1.5, 3.0,
+                    1.0, 2.0
+                  );
+                }
+              }
+            }
+            audio.play("slow");
+            showMessage("❄️ Frost Drake breathed Ice!", 800);
+          }
+        }
       }
       if (snake.has(key(enemy.x, enemy.y)) && game.collisionGraceTicks <= 0) {
         if (same(enemy, game.snake[0])) {
@@ -8094,8 +8402,42 @@
         
         ctx.fillStyle = color;
         ctx.beginPath();
-        ctx.arc(ex, ey, TILE / 2 - 3, 0, Math.PI * 2);
+        // Bulky Slime King vs Standard Radius
+        const enemyRadius = enemy.type === "slimeKing" ? (TILE / 2 + 3) : (TILE / 2 - 3);
+        ctx.arc(ex, ey, enemyRadius, 0, Math.PI * 2);
         ctx.fill();
+        
+        // Shock Wasp static charge arcs to adjacent walls
+        if (enemy.type === "shockWasp" && Math.random() < 0.15) {
+          for (let dy = -1; dy <= 1; dy++) {
+            for (let dx = -1; dx <= 1; dx++) {
+              if (dx === 0 && dy === 0) continue;
+              const wx = enemy.x + dx;
+              const wy = enemy.y + dy;
+              if (wx >= 0 && wx < game.width && wy >= 0 && wy < game.height && game.map[wy][wx] === WALL) {
+                ctx.save();
+                ctx.strokeStyle = "#55d6ff";
+                ctx.lineWidth = 1.35;
+                ctx.shadowBlur = 6;
+                ctx.shadowColor = "#55d6ff";
+                ctx.beginPath();
+                ctx.moveTo(ex, ey);
+                
+                const wxCenter = wx * TILE + TILE / 2;
+                const wyCenter = wy * TILE + TILE / 2;
+                const steps = 3;
+                for (let s = 1; s < steps; s++) {
+                  const tx = ex + (wxCenter - ex) * (s / steps);
+                  const ty = ey + (wyCenter - ey) * (s / steps);
+                  ctx.lineTo(tx + (Math.random() - 0.5) * 4, ty + (Math.random() - 0.5) * 4);
+                }
+                ctx.lineTo(wxCenter, wyCenter);
+                ctx.stroke();
+                ctx.restore();
+              }
+            }
+          }
+        }
         
         ctx.fillStyle = b.enemyEye;
         ctx.beginPath();
@@ -8475,6 +8817,101 @@
           ctx.stroke();
           ctx.restore();
         }
+
+        // 1. Acidic Slime Neon Outline & Bubbles
+        if (game.mutations.acidicSlime > 0) {
+          ctx.save();
+          ctx.strokeStyle = "rgba(57, 255, 20, 0.65)";
+          ctx.lineWidth = r * 2.25;
+          ctx.lineCap = "round";
+          ctx.shadowBlur = 6;
+          ctx.shadowColor = "#39ff14";
+          ctx.beginPath();
+          ctx.arc(drawX, drawY, r + 0.5, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+          
+          if (Math.random() < 0.03) {
+            customParticles.push({
+              x: drawX + (Math.random() - 0.5) * 6,
+              y: drawY + (Math.random() - 0.5) * 6,
+              vx: (Math.random() - 0.5) * 0.3,
+              vy: -0.4 - Math.random() * 0.6,
+              color: "rgba(57, 255, 20, 0.7)",
+              size: 1.2 + Math.random() * 1.6,
+              life: 1.0,
+              decay: 0.006 + Math.random() * 0.006,
+              gravity: -0.015
+            });
+          }
+        }
+
+        // 2. Static Charge Segment Sparks
+        if (game.mutations.staticCharge > 0 && i > 0 && Math.random() < 0.22) {
+          const prevSeg = game.snake[i - 1];
+          const prevFrom = game.prevSnake[i - 1] || prevSeg;
+          const prevX = lerp(prevFrom.x, prevSeg.x, moveAlpha) * TILE + TILE / 2;
+          const prevY = lerp(prevFrom.y, prevSeg.y, moveAlpha) * TILE + TILE / 2;
+          
+          ctx.save();
+          ctx.strokeStyle = "#00f0ff";
+          ctx.lineWidth = 1.25;
+          ctx.shadowBlur = 6;
+          ctx.shadowColor = "#00f0ff";
+          ctx.beginPath();
+          ctx.moveTo(drawX, drawY);
+          
+          const steps = 3;
+          for (let s = 1; s < steps; s++) {
+            const tx = drawX + (prevX - drawX) * (s / steps);
+            const ty = drawY + (prevY - drawY) * (s / steps);
+            ctx.lineTo(tx + (Math.random() - 0.5) * 3.5, ty + (Math.random() - 0.5) * 3.5);
+          }
+          ctx.lineTo(prevX, prevY);
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        // 3. Molten Core Flowing Magma Wave
+        if (game.mutations.moltenCore > 0) {
+          const wave = Math.sin(performance.now() * 0.006 - i * 0.35);
+          if (wave > 0.3) {
+            ctx.save();
+            const intensity = (wave - 0.3) / 0.7;
+            ctx.fillStyle = `rgba(255, 65, 0, ${intensity * 0.85})`;
+            ctx.shadowBlur = 10 * intensity;
+            ctx.shadowColor = "#ff4500";
+            ctx.beginPath();
+            ctx.arc(drawX, drawY, r * 0.95, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+          }
+        }
+
+        // 4. Iron Scale Armored Chevron Plating
+        if (game.mutations.ironScale > 0 && i > 0) {
+          const nextSeg = game.snake[i - 1];
+          const nextFrom = game.prevSnake[i - 1] || nextSeg;
+          const nextX = lerp(nextFrom.x, nextSeg.x, moveAlpha) * TILE + TILE / 2;
+          const nextY = lerp(nextFrom.y, nextSeg.y, moveAlpha) * TILE + TILE / 2;
+          const segmentAngle = Math.atan2(drawY - nextY, drawX - nextX);
+
+          ctx.save();
+          ctx.translate(drawX, drawY);
+          ctx.rotate(segmentAngle);
+          ctx.fillStyle = "#cbd5e1";
+          ctx.strokeStyle = "#475569";
+          ctx.lineWidth = 1.35;
+          ctx.beginPath();
+          ctx.moveTo(-r * 0.5, -r * 0.8);
+          ctx.lineTo(r * 0.35, 0);
+          ctx.lineTo(-r * 0.5, r * 0.8);
+          ctx.lineTo(-r * 0.1, 0);
+          ctx.closePath();
+          ctx.fill();
+          ctx.stroke();
+          ctx.restore();
+        }
       }
       ctx.restore();
 
@@ -8700,6 +9137,14 @@
         grad.addColorStop(0.5, `rgba(220, 0, 0, ${flashIntensity * 0.45})`);
         grad.addColorStop(1, `rgba(160, 0, 0, ${flashIntensity * 0.90})`);
         ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.restore();
+      }
+
+      /* Golden Apple Collection Flash Overlay */
+      if (game.goldenAppleFlash > 0) {
+        ctx.save();
+        ctx.fillStyle = `rgba(255, 220, 100, ${game.goldenAppleFlash * 0.38})`;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.restore();
       }
@@ -8961,9 +9406,22 @@
         game.wallChestsRevealTimer -= dt;
         if (game.wallChestsRevealTimer < 0) game.wallChestsRevealTimer = 0;
       }
+      // Suspend physics ticks during hitstop for high visual impact
+      let activeDt = dt;
+      if (game.hitstopFrames > 0) {
+        game.hitstopFrames -= dt * 0.06;
+        if (game.hitstopFrames < 0) game.hitstopFrames = 0;
+        activeDt = 0;
+      }
+
+      if (game.goldenAppleFlash > 0) {
+        game.goldenAppleFlash -= dt * 0.0025;
+        if (game.goldenAppleFlash < 0) game.goldenAppleFlash = 0;
+      }
+
       let renderAlpha = 1;
       if (game.running && !game.paused) {
-        game.acc += dt;
+        game.acc += activeDt;
         let speed = currentTickSpeed();
         while (game.acc >= speed) {
           tick();
