@@ -4120,6 +4120,21 @@
 
     function startGame() {
       audio.ensure();
+      
+      // Synchronize start button in multiplayer
+      if (multiplayerRole === "client") {
+        if (peerConn && peerConn.open) {
+          peerConn.send({ type: "request_start" });
+        }
+        return;
+      }
+      
+      if (multiplayerRole === "host") {
+        if (peerConn && peerConn.open) {
+          peerConn.send({ type: "start_countdown" });
+        }
+      }
+
       if (game.gameOver) newRun();
       audio.playMusicForFloor(game.floor);
       if (game.awaitingUpgrade) return;
@@ -4166,12 +4181,23 @@
     }
 
     function pauseGame() {
+      if (multiplayerRole === "client") {
+        if (peerConn && peerConn.open) {
+          peerConn.send({ type: "request_pause" });
+        }
+        return;
+      }
       if (!game.running || game.gameOver || game.countdown || game.awaitingUpgrade) return;
       game.paused = !game.paused;
       ui.state.textContent = game.paused ? "Paused" : "Exploring";
       ui.pause.textContent = game.paused ? "Resume" : "Pause";
       if (game.paused) showMessage("Paused", 999999);
       else ui.banner.classList.remove("show");
+      
+      // Sync pause explicitly to client
+      if (multiplayerRole === "host" && peerConn && peerConn.open) {
+        peerConn.send({ type: "sync_pause", paused: game.paused });
+      }
     }
 
     function setDirection(dir) {
@@ -9654,7 +9680,7 @@
           ui.state.textContent = "Ready";
           
           if (multiplayerRole === "host") {
-            startGame(true);
+            startGame();
           }
         }, 1200);
       });
@@ -9663,10 +9689,27 @@
         if (multiplayerRole === "client") {
           if (data.type === "state") {
             receiveGameState(data);
+          } else if (data.type === "start_countdown") {
+            startClientCountdown();
+          } else if (data.type === "restart_game") {
+            newRun();
+          } else if (data.type === "sync_pause") {
+            game.paused = data.paused;
+            ui.state.textContent = game.paused ? "Paused" : "Exploring";
+            ui.pause.textContent = game.paused ? "Resume" : "Pause";
+            if (game.paused) showMessage("Paused", 999999);
+            else ui.banner.classList.remove("show");
           }
         } else if (multiplayerRole === "host") {
           if (data.type === "input") {
             clientDirInput = data.dir;
+          } else if (data.type === "request_start") {
+            startGame();
+          } else if (data.type === "request_restart") {
+            newRun();
+            startGame();
+          } else if (data.type === "request_pause") {
+            pauseGame();
           }
         }
       });
@@ -9726,6 +9769,30 @@
       draw();
     }
 
+    function startClientCountdown() {
+      audio.ensure();
+      audio.playMusicForFloor(game.floor);
+      game.countdown = true;
+      game.paused = false;
+      ui.state.textContent = "Get ready";
+      
+      let n = 3;
+      function clientCd() {
+        if (n > 0) {
+          showMessage(String(n), 900);
+          audio.play("timer");
+          n--;
+          setTimeout(clientCd, 1000);
+          return;
+        }
+        showMessage("Go", 450);
+        audio.play("timer");
+        game.countdown = false;
+        game.running = true;
+      }
+      clientCd();
+    }
+
     const supportsPointer = "PointerEvent" in window;
     document.querySelectorAll("[data-dir]").forEach(button => {
       button.addEventListener("click", event => {
@@ -9752,6 +9819,17 @@
     ui.start.addEventListener("click", startGame);
     ui.pause.addEventListener("click", pauseGame);
     ui.restart.addEventListener("click", () => {
+      if (multiplayerRole === "client") {
+        if (peerConn && peerConn.open) {
+          peerConn.send({ type: "request_restart" });
+        }
+        return;
+      }
+      if (multiplayerRole === "host") {
+        if (peerConn && peerConn.open) {
+          peerConn.send({ type: "restart_game" });
+        }
+      }
       newRun();
       startGame();
     });
