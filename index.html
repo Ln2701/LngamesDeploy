@@ -1346,7 +1346,29 @@
       <p class="menu-hook">Snake turned into a roguelike dungeon crawler.</p>
       <div class="menu-actions" aria-label="Main actions">
         <button id="menuPlayBtn" type="button">Play Snake&sup2;</button>
+        <button class="secondary" id="p2pLobbyBtn" type="button">👥 Online Co-Op</button>
         <button class="secondary" id="menuCopyBtn" type="button">Copy Link</button>
+      </div>
+
+      <!-- Multiplayer Lobby Selection Panel -->
+      <div id="multiplayer-panel" style="display: none; margin: 15px auto 0 auto; max-width: 420px; padding: 20px; background: rgba(18, 22, 28, 0.45); backdrop-filter: blur(12px) saturate(120%); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #eceff4; text-align: center; box-shadow: 0 8px 32px rgba(0,0,0,0.5);">
+        <h3 style="color: #00f0ff; margin-top: 0; font-size: 18px; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: 'Inter', sans-serif;">👥 Online Co-Op Lobby</h3>
+        <div id="p2p-setup-view">
+          <button id="p2p-host-btn" type="button" style="width: 100%; margin-bottom: 10px; padding: 12px; font-weight: bold; background: linear-gradient(135deg, #00f0ff, #8d72ff); border: none; border-radius: 6px; color: #0b0f14; cursor: pointer; transition: all 0.2s; font-family: 'Outfit', sans-serif;">🛡️ Host Co-Op Game</button>
+          <div style="margin: 15px 0; border-top: 1px solid rgba(255,255,255,0.1);"></div>
+          <p style="font-size: 12px; opacity: 0.7; margin-bottom: 8px; text-align: left;">Or enter Host's invite code:</p>
+          <input type="text" id="p2p-join-input" placeholder="Invite Code (e.g. snake-4512)" style="width: 100%; padding: 10px; margin-bottom: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; color: white; text-align: center; font-family: monospace; font-size: 14px;">
+          <button id="p2p-join-btn" type="button" style="width: 100%; padding: 12px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; color: white; cursor: pointer; transition: all 0.2s;">⚡ Join Lobby</button>
+        </div>
+        
+        <!-- Waiting state for Host -->
+        <div id="p2p-waiting-view" style="display: none; text-align: center;">
+          <p style="margin-bottom: 8px; font-size: 13px;">Your Lobby Invite Code:</p>
+          <div id="p2p-code-display" style="font-size: 18px; font-weight: bold; background: rgba(0,0,0,0.4); padding: 10px; border-radius: 6px; letter-spacing: 2px; color: #00f0ff; margin-bottom: 12px; border: 1px solid rgba(0,240,255,0.2); font-family: monospace;">Generating...</div>
+          <p style="font-size: 12px; opacity: 0.6; animation: pulse 1.5s infinite;">Waiting for Player 2 to join...</p>
+        </div>
+
+        <button id="p2p-back-btn" type="button" style="background: transparent; border: 1px solid rgba(255,255,255,0.2); width: 100%; margin-top: 10px; padding: 10px; border-radius: 6px; color: white; cursor: pointer;">Back</button>
       </div>
     </header>
 
@@ -1540,8 +1562,16 @@
     </section>
   </main>
 
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
   <script>
     "use strict";
+
+    let peer = null;
+    let peerConn = null;
+    let multiplayerRole = null; // "host" or "client"
+    let p2pId = null;
+    let clientConnected = false;
+    let clientDirInput = "left";
 
     const canvas = document.getElementById("game");
     const ctx = canvas.getContext("2d");
@@ -2502,7 +2532,11 @@
       bloatTicks: 0,
       skinShedUsedThisFloor: false,
       goldenAppleFlash: 0,
-      hitstopFrames: 0
+      hitstopFrames: 0,
+      snake2: [],
+      prevSnake2: [],
+      dir2: "left",
+      nextDir2: "left"
     };
 
     function randInt(min, max) {
@@ -3998,6 +4032,10 @@
       game.skinShedUsedThisFloor = false;
       game.goldenAppleFlash = 0;
       game.hitstopFrames = 0;
+      game.snake2 = [];
+      game.prevSnake2 = [];
+      game.dir2 = "left";
+      game.nextDir2 = "left";
       game.sludgeTiles = [];
       game.stoneDebris = [];
       game.straightTicks = 0;
@@ -4137,6 +4175,12 @@
     }
 
     function setDirection(dir) {
+      if (multiplayerRole === "client") {
+        if (peerConn && peerConn.open) {
+          peerConn.send({ type: "input", dir: dir });
+        }
+        return;
+      }
       if (!DIRS[dir]) return;
       if (onIceTile()) return; // Lock inputs during ice slide!
       if (!game.running) {
@@ -6666,6 +6710,7 @@
     }
 
     function tick() {
+      if (multiplayerRole === "client") return;
       if (!game.running || game.paused || game.gameOver || game.awaitingUpgrade) return;
       game.ticks = (game.ticks || 0) + 1;
 
@@ -7058,6 +7103,25 @@
 
       game.prevSnake = cloneSnake();
       game.snake.unshift(next);
+
+      if (multiplayerRole) {
+        if (!game.snake2 || game.snake2.length === 0) {
+          game.snake2 = [{ x: game.snake[0].x - 1, y: game.snake[0].y }];
+        }
+        game.prevSnake2 = game.snake2.map(p => ({ x: p.x, y: p.y }));
+        
+        const d2 = DIRS[clientDirInput];
+        const head2 = game.snake2[0];
+        const movement2 = resolveMapMovement(head2, d2);
+        const next2 = movement2.next;
+        
+        game.snake2.unshift(next2);
+        if (willGrow) {
+          // Shared growth synergy
+        } else {
+          game.snake2.pop();
+        }
+      }
 
       if (game.altExit && same(next, game.altExit)) {
         enterSecretRoom();
@@ -7577,6 +7641,10 @@
       }
       if (game.floorClear && same(game.snake[0], game.exit)) {
         completeFloor();
+      }
+
+      if (multiplayerRole === "host") {
+        broadcastGameState();
       }
     }
 
@@ -8915,6 +8983,51 @@
       }
       ctx.restore();
 
+      // Draw Player 2 Snake (WebRTC Co-Op)
+      if (multiplayerRole && game.snake2 && game.snake2.length > 0) {
+        ctx.save();
+        for (let i = game.snake2.length - 1; i >= 0; i--) {
+          const p = game.snake2[i];
+          const from = game.prevSnake2[i] || p;
+          const drawX = lerp(from.x, p.x, moveAlpha) * TILE + TILE / 2;
+          const drawY = lerp(from.y, p.y, moveAlpha) * TILE + TILE / 2;
+          const head = i === 0;
+          const r = Math.max(4.5, (TILE / 2) * (1 - (i / game.snake2.length) * 0.42) - 1.2);
+          
+          ctx.save();
+          if (head) {
+            // Draw head with electric cyan neon halo
+            ctx.shadowBlur = 12;
+            ctx.shadowColor = "#00f0ff";
+            ctx.fillStyle = "#00f0ff";
+            ctx.beginPath();
+            ctx.arc(drawX, drawY, r + 0.5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw cute neon eyes
+            ctx.fillStyle = "#ffffff";
+            ctx.beginPath();
+            ctx.arc(drawX - 3.5, drawY - 2.5, 2.2, 0, Math.PI * 2);
+            ctx.arc(drawX + 3.5, drawY - 2.5, 2.2, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = "#090d16";
+            ctx.beginPath();
+            ctx.arc(drawX - 3.5, drawY - 2.5, 1.0, 0, Math.PI * 2);
+            ctx.arc(drawX + 3.5, drawY - 2.5, 1.0, 0, Math.PI * 2);
+            ctx.fill();
+          } else {
+            // Draw body segments with smooth cyan to purple color shift
+            ctx.fillStyle = i % 2 === 0 ? "#55c7ff" : "#8d72ff";
+            ctx.beginPath();
+            ctx.arc(drawX, drawY, r, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          ctx.restore();
+        }
+        ctx.restore();
+      }
+
       if (game.parasites) {
         for (const p of game.parasites) {
           const cx = p.x * TILE + TILE / 2;
@@ -9481,6 +9594,138 @@
       }
     });
 
+    /* === PeerJS WebRTC P2P Multiplayer === */
+    function initP2P() {
+      if (peer) return;
+      
+      peer = new Peer(null, {
+        debug: 1
+      });
+
+      peer.on('open', (id) => {
+        p2pId = id;
+        document.getElementById("p2p-code-display").textContent = id;
+      });
+
+      peer.on('connection', (conn) => {
+        peerConn = conn;
+        multiplayerRole = "host";
+        setupConnectionCallbacks();
+      });
+      
+      peer.on('error', (err) => {
+        console.error("PeerJS error:", err);
+        showMessage("❌ Connection error!", 1000);
+      });
+    }
+
+    function connectToHost(hostId) {
+      if (!peer) {
+        initP2P();
+      }
+      multiplayerRole = "client";
+      
+      if (peer.id) {
+        peerConn = peer.connect(hostId);
+        setupConnectionCallbacks();
+      } else {
+        peer.on('open', () => {
+          peerConn = peer.connect(hostId);
+          setupConnectionCallbacks();
+        });
+      }
+    }
+
+    function setupConnectionCallbacks() {
+      peerConn.on('open', () => {
+        clientConnected = true;
+        showMessage("👥 Co-Op Player Connected!", 1500);
+        
+        if (multiplayerRole === "host") {
+          game.snake2 = [{ x: game.snake[0].x - 1, y: game.snake[0].y }];
+          game.prevSnake2 = [{ x: game.snake[0].x - 1, y: game.snake[0].y }];
+          game.dir2 = "left";
+          game.nextDir2 = "left";
+        }
+        
+        setTimeout(() => {
+          document.getElementById("multiplayer-panel").style.display = "none";
+          document.body.classList.remove("menu-active");
+          ui.state.textContent = "Ready";
+          
+          if (multiplayerRole === "host") {
+            startGame(true);
+          }
+        }, 1200);
+      });
+
+      peerConn.on('data', (data) => {
+        if (multiplayerRole === "client") {
+          if (data.type === "state") {
+            receiveGameState(data);
+          }
+        } else if (multiplayerRole === "host") {
+          if (data.type === "input") {
+            clientDirInput = data.dir;
+          }
+        }
+      });
+
+      peerConn.on('close', () => {
+        showMessage("👥 Player disconnected!", 1500);
+        setTimeout(() => {
+          location.reload();
+        }, 1500);
+      });
+    }
+
+    function broadcastGameState() {
+      if (!peerConn || multiplayerRole !== "host") return;
+      const state = {
+        type: "state",
+        snake: game.snake,
+        snake2: game.snake2,
+        prevSnake: game.prevSnake,
+        prevSnake2: game.prevSnake2,
+        food: game.food,
+        gold: game.gold,
+        goldenApple: game.goldenApple,
+        heartPickup: game.heartPickup,
+        enemies: game.enemies,
+        mudTiles: game.mudTiles,
+        iceTiles: game.iceTiles,
+        lives: game.lives,
+        score: game.score,
+        floor: game.floor,
+        running: game.running,
+        paused: game.paused,
+        gameOver: game.gameOver
+      };
+      peerConn.send(state);
+    }
+
+    function receiveGameState(state) {
+      game.snake = state.snake;
+      game.snake2 = state.snake2;
+      game.prevSnake = state.prevSnake;
+      game.prevSnake2 = state.prevSnake2;
+      game.food = state.food;
+      game.gold = state.gold;
+      game.goldenApple = state.goldenApple;
+      game.heartPickup = state.heartPickup;
+      game.enemies = state.enemies;
+      game.mudTiles = state.mudTiles;
+      game.iceTiles = state.iceTiles;
+      game.lives = state.lives;
+      game.score = state.score;
+      game.floor = state.floor;
+      game.running = state.running;
+      game.paused = state.paused;
+      game.gameOver = state.gameOver;
+      
+      draw();
+    }
+
     const supportsPointer = "PointerEvent" in window;
     document.querySelectorAll("[data-dir]").forEach(button => {
       button.addEventListener("click", event => {
@@ -9531,6 +9776,48 @@
     const menuCopyBtn = document.getElementById("menuCopyBtn");
     if (menuPlayBtn) menuPlayBtn.addEventListener("click", enterGameFromMenu);
     if (menuCopyBtn) menuCopyBtn.addEventListener("click", () => copyText(publicGameUrl(), "Link copied"));
+
+    // Wire up P2P Multiplayer Button Listeners
+    const p2pLobbyBtn = document.getElementById("p2pLobbyBtn");
+    const multiplayerPanel = document.getElementById("multiplayer-panel");
+    const gameGrid = document.querySelector(".game-grid");
+    
+    if (p2pLobbyBtn) {
+      p2pLobbyBtn.addEventListener("click", () => {
+        multiplayerPanel.style.display = "block";
+        if (gameGrid) gameGrid.style.display = "none";
+        initP2P();
+      });
+    }
+
+    const p2pBackBtn = document.getElementById("p2p-back-btn");
+    if (p2pBackBtn) {
+      p2pBackBtn.addEventListener("click", () => {
+        multiplayerPanel.style.display = "none";
+        if (gameGrid) gameGrid.style.display = "grid";
+      });
+    }
+
+    const p2pHostBtn = document.getElementById("p2p-host-btn");
+    if (p2pHostBtn) {
+      p2pHostBtn.addEventListener("click", () => {
+        document.getElementById("p2p-setup-view").style.display = "none";
+        document.getElementById("p2p-waiting-view").style.display = "block";
+      });
+    }
+
+    const p2pJoinBtn = document.getElementById("p2p-join-btn");
+    if (p2pJoinBtn) {
+      p2pJoinBtn.addEventListener("click", () => {
+        const input = document.getElementById("p2p-join-input").value.trim();
+        if (input) {
+          showMessage("🔗 Connecting to host...", 1000);
+          connectToHost(input);
+        } else {
+          showMessage("⚠️ Enter a valid Invite Code!", 1000);
+        }
+      });
+    }
 
     document.getElementById("victoryClaimBtn").addEventListener("click", () => {
       document.getElementById("victoryPanel").style.display = "none";
